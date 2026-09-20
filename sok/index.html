@@ -1,0 +1,16 @@
+---
+title: Søk
+description: Søk etter steder, retter og tags hos Junkie.
+permalink: /sok/
+search: true
+---
+<header class="side__topp">
+  <h1 class="side__tittel">Søk</h1>
+</header>
+<form class="sok-stor" action="{{ '/sok/' | relative_url }}" method="get" role="search">
+  <label class="sr-only" for="q">Søk etter sted, rett eller tag</label>
+  <input id="q" class="sok-stor__felt" type="search" name="q" placeholder="Kebab, Grønland, halal …" autocomplete="off" autofocus>
+</form>
+<div id="sok-status" class="side__meta" role="status" aria-live="polite"></div>
+<ul id="sok-treff" class="sok-treff" data-src="{{ '/sok.json' | relative_url }}"></ul>
+<noscript><p class="tom">Søket trenger JavaScript. Prøv <a href="{{ '/steder/' | relative_url }}">stedslista</a> eller <a href="{{ '/tag/' | relative_url }}">tags</a> i stedet.</p></noscript>

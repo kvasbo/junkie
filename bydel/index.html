@@ -1,0 +1,18 @@
+---
+title: Bydeler
+description: Gatemat i Oslo sortert på bydel og strøk.
+permalink: /bydel/
+---
+{%- assign j = site.data.junkie -%}
+<header class="side__topp">
+  <h1 class="side__tittel">Bydeler</h1>
+</header>
+{%- if j.bydeler.size > 0 -%}
+<ul class="termliste">
+  {%- for b in j.bydeler -%}
+  <li><a class="termliste__lenke" href="{{ '/bydel/' | append: b.slug | append: '/' | relative_url }}">{{ b.name }} <span class="termliste__antall">{{ b.count }}</span></a></li>
+  {%- endfor -%}
+</ul>
+{%- else -%}
+<p class="tom">Ingen steder med bydel ennå.</p>
+{%- endif -%}

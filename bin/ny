@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# Lager en ny fil fra malene i _templates/.
+#
+#   bin/ny sted <slug>                      -> _steder/<slug>.md
+#   bin/ny anmeldelse <sted-slug> "<rett>"  -> _anmeldelser/<sted-slug>-<rett-slug>-<YYYY-MM>.md
+#   bin/ny liste <slug>                     -> _lister/<slug>.md
+#
+require "date"
+require "fileutils"
+
+ROOT = File.expand_path("..", __dir__)
+
+def slugify(s)
+  s.to_s.downcase.tr("æøå", "aoa").gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
+end
+
+def write(path, content)
+  abort "Finnes allerede: #{path}" if File.exist?(path)
+  FileUtils.mkdir_p(File.dirname(path))
+  File.write(path, content)
+  puts "Opprettet #{path.sub("#{ROOT}/", '')}"
+end
+
+type, a, b = ARGV
+case type
+when "sted"
+  abort "Bruk: bin/ny sted <slug>" if a.nil?
+  slug = slugify(a)
+  tpl = File.read("#{ROOT}/_templates/sted.md")
+  tpl = tpl.sub(/^title: .*$/, "title: #{a}")
+  write("#{ROOT}/_steder/#{slug}.md", tpl)
+when "anmeldelse"
+  abort "Bruk: bin/ny anmeldelse <sted-slug> \"<rettens navn>\"" if a.nil? || b.nil?
+  sted = slugify(a)
+  abort "Fant ikke _steder/#{sted}.md – lag stedet først (bin/ny sted)" unless File.exist?("#{ROOT}/_steder/#{sted}.md")
+  mnd = Date.today.strftime("%Y-%m")
+  key = "#{sted}-#{slugify(b)}-#{mnd}"
+  tpl = File.read("#{ROOT}/_templates/anmeldelse.md")
+  tpl = tpl.sub(/^venue: .*$/, "venue: #{sted}")
+           .sub(/^title: .*$/, "title: #{b}")
+           .sub(/^visited: .*$/, "visited: #{mnd}")
+           .sub(/^date: .*$/, "date: #{Date.today}")
+           .sub(%r{/assets/img/anmeldelser/[^/]+/}, "/assets/img/anmeldelser/#{key}/")
+  write("#{ROOT}/_anmeldelser/#{key}.md", tpl)
+when "liste"
+  abort "Bruk: bin/ny liste <slug>" if a.nil?
+  tpl = File.read("#{ROOT}/_templates/liste.md")
+  tpl = tpl.sub(/^title: .*$/, "title: #{a}").sub(/^date: .*$/, "date: #{Date.today}")
+  write("#{ROOT}/_lister/#{slugify(a)}.md", tpl)
+else
+  puts File.read(__FILE__).lines.grep(/^#/).map { |l| l.sub(/^# ?/, "") }[1..-1].join
+  exit 1
+end

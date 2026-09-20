@@ -6,6 +6,26 @@
 
 ---
 
+## Implementasjon: statisk side (Jekyll på Cloudflare Pages)
+
+> Lagt til etter at spesifikasjonen under ble skrevet. Spesifikasjonen beskriver en Rails-app; den er i stedet realisert som en statisk Jekyll-side hostet på Cloudflare Pages. Innholdsmodellen, scoringen, IA-en og den visuelle retningen er beholdt. Se [README.md](README.md) for hvordan siden bygges og hvordan innhold skrives.
+
+Valg tatt for den statiske utgaven:
+
+- [x] **Innhold:** Markdown-filer i git. Én fil per sted (`_steder/`), anmeldelse (`_anmeldelser/`) og kuratert liste (`_lister/`). Ingen CMS eller admin-UI – redigering skjer i editor eller på GitHub.
+- [x] **Utkast/publisert/arkivert:** `status`-felt i front matter. Utkast vises lokalt med merking, aldri i produksjon.
+- [x] **Bilder:** Originaler i repoet under `assets/img/`. Resizing via Cloudflare Image Transformations (`/cdn-cgi/image/…`) i produksjon; erstatter imgproxy + R2.
+- [x] **Søk:** Klientside-søk mot en JSON-indeks generert ved bygg (`/sok.json`). Erstatter FTS5.
+- [x] **Kart:** Leaflet (selvhostet) med OSM-fliser, data fra `/steder.json`.
+- [x] **Stedsdata:** Manuell front matter. `bin/sted` henter navn, adresse, koordinater og åpningstider fra Google Places API (New) og skriver ut front matter.
+- [x] **Kategori-, tag- og bydelssider:** Genereres av en Jekyll-plugin (`_plugins/junkie.rb`) som også regner ut steds-score, anbefalt rett, ankerpunkter og feed.
+- [x] **Deploy:** Cloudflare Pages med git-integrasjon. `bundle exec jekyll build`, output `_site`, `JEKYLL_ENV=production`. Ruby-versjon fra `.ruby-version`.
+- [x] **Typografi:** Lilita One (OFL) selvhostet for overskrifter, system-sans for brødtekst.
+- [x] **Auth, brukere, Litestream, SQLite, Kamal, DigitalOcean:** Utgår – ikke relevant for en statisk side.
+- [x] **RSS og sitemap:** Med fra start (Atom-feed på `/feed.xml`, `sitemap.xml` via jekyll-sitemap).
+- [x] **Eksempelinnhold:** Ingen. Maler med alle felter ligger i `_templates/`, `bin/ny` lager nye filer fra dem.
+- [x] **Forsiden:** Intro-tekst og arbeidslista «Steder som testes nå» (`_data/testes.yml`) i tillegg til feeden.
+
 ## Visjon
 
 Bli den autoritative stemmen for gatemat i Oslo. Når noen googler "beste kebab Grønland" skal Junkie dukke opp. På sikt: ekspansjon til flere byer, flere anmeldere, og en merkevare folk stoler på.

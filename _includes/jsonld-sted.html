@@ -1,0 +1,31 @@
+{%- assign v = page -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "@id": "{{ v.url | absolute_url }}",
+  "name": {{ v.title | jsonify }},
+  "url": "{{ v.url | absolute_url }}",
+  {%- if v.image %}"image": "{{ v.image | absolute_url }}",{% endif %}
+  {%- if v.address %}"address": {{ v.address | jsonify }},{% endif %}
+  {%- if v.has_coords %}"geo": {"@type": "GeoCoordinates", "latitude": {{ v.lat }}, "longitude": {{ v.lng }}},{% endif %}
+  "servesCuisine": {{ v.category_data | map: "name" | jsonify }},
+  {%- if v.google_maps_url %}"hasMap": {{ v.google_maps_url | jsonify }},{% endif %}
+  {%- if v.closed %}"permanentlyClosed": true,{% endif %}
+  {%- if v.opening_hours.size > 0 %}"openingHours": {{ v.opening_hours | jsonify }},{% endif %}
+  "aggregateRating": {"@type": "AggregateRating", "ratingValue": {{ v.score }}, "bestRating": 3, "worstRating": 0, "ratingCount": {{ v.review_count }}},
+  "review": [
+    {%- for r in v.reviews %}
+    {
+      "@type": "Review",
+      "name": {{ r.title | jsonify }},
+      "url": "{{ r.lenke | absolute_url }}",
+      "datePublished": "{{ r.date | date: '%Y-%m-%d' }}",
+      "reviewBody": {{ r.excerpt | jsonify }},
+      "author": {"@type": "Organization", "name": "{{ site.title }}"},
+      "reviewRating": {"@type": "Rating", "ratingValue": {{ r.score }}, "bestRating": 3, "worstRating": 0}
+    }{% unless forloop.last %},{% endunless %}
+    {%- endfor %}
+  ]
+}
+</script>

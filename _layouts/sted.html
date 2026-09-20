@@ -1,0 +1,85 @@
+---
+layout: default
+---
+{%- assign v = page -%}
+{% include jsonld-sted.html %}
+<article class="sted sted--score-{{ v.score }}">
+  <header class="sted__topp">
+    <p class="brodsmuler"><a href="{{ '/steder/' | relative_url }}">Steder</a>{% if v.bydel_data %} / <a href="{{ '/bydel/' | append: v.bydel_slug | append: '/' | relative_url }}">{{ v.bydel_data.name }}</a>{% endif %}</p>
+    <h1 class="sted__navn">{{ v.title }}</h1>
+    <div class="sted__score">
+      {% include stjerner.html score=v.score str="hero" %}
+      <p class="sted__score-tekst">{{ v.score_label }}{% if v.score_override != nil and v.score_override != "" %} <span class="sr-only">(redaksjonelt justert)</span>{% endif %}</p>
+    </div>
+    {%- if v.closed -%}
+    <p class="varsel varsel--nedlagt" role="status"><strong>Nedlagt.</strong> Dette stedet har stengt{% if v.closed_label != "" %} ({{ v.closed_label }}){% endif %}. Anmeldelsene står som arkiv.</p>
+    {%- endif -%}
+    <ul class="chips" aria-label="Kategorier">
+      {%- for k in v.category_data -%}
+      <li><a class="chip" href="{{ '/kategori/' | append: k.slug | append: '/' | relative_url }}">{% include ikon.html slug=k.slug %} {{ k.name }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </header>
+
+  {%- if v.summary != "" -%}
+  <section class="sted__kommentar prosa" aria-label="Redaksjonell kommentar">
+    {{ v.summary | markdownify }}
+  </section>
+  {%- endif -%}
+
+  {%- if v.featured_review -%}
+  <aside class="sted__anbefalt">
+    <p class="sted__anbefalt-etikett">Anbefalt rett</p>
+    <a class="sted__anbefalt-lenke" href="#{{ v.featured_review.anchor }}">{{ v.featured_review.title }}</a>
+    {% include stjerner.html score=v.featured_review.score %}
+  </aside>
+  {%- endif -%}
+
+  <section class="sted__info">
+    <h2 class="sr-only">Praktisk info</h2>
+    <dl class="info">
+      {%- if v.address -%}
+      <div class="info__rad">
+        <dt>Adresse</dt>
+        <dd>{{ v.address }}{% if v.google_maps_url %} · <a href="{{ v.google_maps_url }}" rel="noopener">Google Maps</a>{% endif %}</dd>
+      </div>
+      {%- endif -%}
+      {%- if v.opening_hours.size > 0 -%}
+      <div class="info__rad">
+        <dt>Åpningstider</dt>
+        <dd><ul class="tider">{% for t in v.opening_hours %}<li>{{ t }}</li>{% endfor %}</ul></dd>
+      </div>
+      {%- endif -%}
+    </dl>
+    {%- if v.has_coords -%}
+    <div class="kart kart--liten" id="kart" data-lat="{{ v.lat }}" data-lng="{{ v.lng }}" data-score="{{ v.score }}" data-navn="{{ v.title | escape }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart som viser {{ v.title }}" role="img"></div>
+    {%- endif -%}
+  </section>
+
+  <section class="sted__retter">
+    <h2 class="seksjon__tittel">Anmeldte retter</h2>
+    {%- for d in v.dishes -%}
+    <section class="rett" id="{{ d.slug }}" aria-labelledby="rett-{{ d.slug }}">
+      <h3 class="rett__tittel" id="rett-{{ d.slug }}">{{ d.title }}{% if d.revisits > 0 %} <span class="rett__antall">{{ d.reviews.size }} besøk</span>{% endif %}</h3>
+      {%- for r in d.reviews -%}
+        {%- assign revisit = false -%}
+        {%- if forloop.index0 > 0 or d.revisits > 0 and forloop.first == false -%}{%- assign revisit = true -%}{%- endif -%}
+        {%- if d.revisits > 0 and forloop.first -%}{%- assign revisit = false -%}{%- endif -%}
+        {% include anmeldelse.html review=r revisit=revisit %}
+      {%- endfor -%}
+    </section>
+    {%- endfor -%}
+  </section>
+
+  {%- if v.tags.size > 0 -%}
+  <footer class="sted__bunn">
+    <h2 class="sr-only">Tags for dette stedet</h2>
+    <ul class="tags">
+      {%- for t in v.tags -%}
+      {%- assign ts = v.tag_slugs[forloop.index0] -%}
+      <li><a class="tag" href="{{ '/tag/' | append: ts | append: '/' | relative_url }}">#{{ t }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </footer>
+  {%- endif -%}
+</article>

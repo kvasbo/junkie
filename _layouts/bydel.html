@@ -1,0 +1,10 @@
+---
+layout: default
+---
+{%- assign t = page.term -%}
+<header class="side__topp">
+  <p class="brodsmuler"><a href="{{ '/bydel/' | relative_url }}">Bydeler</a></p>
+  <h1 class="side__tittel">{{ t.name }}</h1>
+  <p class="side__meta">{{ page.venues.size }} {% if page.venues.size == 1 %}sted{% else %}steder{% endif %} · <a href="{{ '/kart/' | relative_url }}">Se på kartet</a></p>
+</header>
+{% include steder-rutenett.html venues=page.venues %}

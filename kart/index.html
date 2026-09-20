@@ -1,0 +1,16 @@
+---
+title: Kart
+description: Alle steder Junkie har anmeldt, på kartet. Fargekodet etter score.
+permalink: /kart/
+map: true
+wide: true
+body_class: kartside
+---
+<h1 class="sr-only">Kart over alle steder</h1>
+<div class="kart kart--full" id="kart" data-src="{{ '/steder.json' | relative_url }}" data-center="{{ site.map.center | join: ',' }}" data-zoom="{{ site.map.zoom }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart over alle anmeldte steder"></div>
+<div class="kart__forklaring" aria-label="Forklaring">
+  <span class="kart__prikk kart__prikk--3"></span> ★★★
+  <span class="kart__prikk kart__prikk--2"></span> ★★☆
+  <span class="kart__prikk kart__prikk--1"></span> ★☆☆
+  <span class="kart__prikk kart__prikk--0"></span> ☆☆☆
+</div>

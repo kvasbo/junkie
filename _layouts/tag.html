@@ -1,0 +1,15 @@
+---
+layout: default
+---
+{%- assign t = page.term -%}
+<header class="side__topp">
+  <p class="brodsmuler"><a href="{{ '/tag/' | relative_url }}">Tags</a></p>
+  <h1 class="side__tittel">#{{ t.name }}</h1>
+  <p class="side__meta">{{ t.reviews.size }} {% if t.reviews.size == 1 %}rett{% else %}retter{% endif %} på {{ t.venues.size }} {% if t.venues.size == 1 %}sted{% else %}steder{% endif %}</p>
+</header>
+<ul class="rutenett">
+  {%- assign sorted = t.reviews | sort: "score" | reverse -%}
+  {%- for r in sorted -%}
+  <li>{% include sted-kort.html venue=r.venue_doc review=r %}</li>
+  {%- endfor -%}
+</ul>

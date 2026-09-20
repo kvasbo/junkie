@@ -1,0 +1,19 @@
+---
+title: Tags
+description: Alle tags Junkie har brukt – retttyper, kvaliteter, kosthold og mer.
+permalink: /tag/
+---
+{%- assign j = site.data.junkie -%}
+<header class="side__topp">
+  <h1 class="side__tittel">Tags</h1>
+  <p class="side__intro">Fritt definerte stikkord på hver rett. Halal, vegetar og vegan er vanlige tags.</p>
+</header>
+{%- if j.tags.size > 0 -%}
+<ul class="tags tags--sky">
+  {%- for t in j.tags -%}
+  <li><a class="tag" href="{{ '/tag/' | append: t.slug | append: '/' | relative_url }}">#{{ t.name }} <span class="tag__antall">{{ t.reviews.size }}</span></a></li>
+  {%- endfor -%}
+</ul>
+{%- else -%}
+<p class="tom">Ingen tags ennå.</p>
+{%- endif -%}

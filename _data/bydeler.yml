@@ -1,0 +1,39 @@
+# Bydeler/strøk. Slug brukes i front matter på steder (bydel: gronland).
+# Ukjente slugs fungerer også – da brukes slugen som navn. Legg gjerne til flere.
+- { slug: sentrum, name: Sentrum }
+- { slug: gronland, name: Grønland }
+- { slug: toyen, name: Tøyen }
+- { slug: grunerlokka, name: Grünerløkka }
+- { slug: sofienberg, name: Sofienberg }
+- { slug: torshov, name: Torshov }
+- { slug: sagene, name: Sagene }
+- { slug: bislett, name: Bislett }
+- { slug: st-hanshaugen, name: St. Hanshaugen }
+- { slug: majorstuen, name: Majorstuen }
+- { slug: frogner, name: Frogner }
+- { slug: vika, name: Vika }
+- { slug: aker-brygge, name: Aker Brygge }
+- { slug: bjorvika, name: Bjørvika }
+- { slug: gamlebyen, name: Gamlebyen }
+- { slug: kampen, name: Kampen }
+- { slug: valerenga, name: Vålerenga }
+- { slug: ensjo, name: Ensjø }
+- { slug: carl-berner, name: Carl Berner }
+- { slug: sinsen, name: Sinsen }
+- { slug: storo, name: Storo }
+- { slug: nydalen, name: Nydalen }
+- { slug: loren, name: Løren }
+- { slug: okern, name: Økern }
+- { slug: ullevaal, name: Ullevål }
+- { slug: skoyen, name: Skøyen }
+- { slug: smestad, name: Smestad }
+- { slug: roa, name: Røa }
+- { slug: lambertseter, name: Lambertseter }
+- { slug: manglerud, name: Manglerud }
+- { slug: ryen, name: Ryen }
+- { slug: holmlia, name: Holmlia }
+- { slug: mortensrud, name: Mortensrud }
+- { slug: tveita, name: Tveita }
+- { slug: furuset, name: Furuset }
+- { slug: grorud, name: Grorud }
+- { slug: stovner, name: Stovner }

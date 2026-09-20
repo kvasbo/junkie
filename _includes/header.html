@@ -1,0 +1,23 @@
+<header class="topp">
+  <div class="topp__indre">
+    <a class="logo" href="{{ '/' | relative_url }}" aria-label="{{ site.title }} – til forsiden">
+      {% include logo.svg %}
+    </a>
+    <form class="sok-form" action="{{ '/sok/' | relative_url }}" method="get" role="search">
+      <label class="sr-only" for="q-topp">Søk etter sted, rett eller tag</label>
+      <input id="q-topp" class="sok-form__felt" type="search" name="q" placeholder="Søk kebab, sted, tag…" autocomplete="off">
+      <button class="sok-form__knapp" type="submit" aria-label="Søk">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M16 16l5 5"/></svg>
+      </button>
+    </form>
+  </div>
+  <nav class="meny" aria-label="Hovedmeny">
+    <ul class="meny__liste">
+      {% for item in site.data.nav %}
+      {% assign aktiv = false %}
+      {% if page.url == item.url %}{% assign aktiv = true %}{% elsif item.url != "/" and page.url contains item.url %}{% assign aktiv = true %}{% endif %}
+      <li><a class="meny__lenke{% if aktiv %} meny__lenke--aktiv{% endif %}" href="{{ item.url | relative_url }}"{% if aktiv %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+</header>

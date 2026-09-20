@@ -1,0 +1,13 @@
+---
+title: Alle steder
+description: Alle steder Junkie har anmeldt i Oslo, sortert etter score.
+permalink: /steder/
+map: true
+---
+{%- assign j = site.data.junkie -%}
+<header class="side__topp">
+  <h1 class="side__tittel">Alle steder</h1>
+  <p class="side__meta">{{ j.venues.size }} {% if j.venues.size == 1 %}sted{% else %}steder{% endif %} · <a href="{{ '/kart/' | relative_url }}">Fullskjermkart</a></p>
+</header>
+<div class="kart kart--oversikt" id="kart" data-src="{{ '/steder.json' | relative_url }}" data-center="{{ site.map.center | join: ',' }}" data-zoom="{{ site.map.zoom }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart over alle anmeldte steder"></div>
+{% include steder-rutenett.html venues=j.venues %}

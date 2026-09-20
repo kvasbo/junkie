@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang }}">
+{% include head.html %}
+<body class="{{ page.body_class }}">
+  <a class="skip-link" href="#innhold">Hopp til innhold</a>
+  {% include header.html %}
+  <main id="innhold" class="hoved{% if page.wide %} hoved--bred{% endif %}" tabindex="-1">
+    {{ content }}
+  </main>
+  {% include footer.html %}
+  {% if page.map %}
+  <script src="{{ '/assets/vendor/leaflet/leaflet.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/kart.js' | relative_url }}" defer></script>
+  {% endif %}
+  {% if page.search %}
+  <script src="{{ '/assets/js/sok.js' | relative_url }}" defer></script>
+  {% endif %}
+</body>
+</html>

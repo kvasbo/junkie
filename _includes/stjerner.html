@@ -1,0 +1,10 @@
+{%- comment -%}
+  Score-badge. Bruk: {% include stjerner.html score=3 str="stor" %}
+{%- endcomment -%}
+{%- assign s = include.score | default: 0 | plus: 0 -%}
+{%- assign label = s | score_label -%}
+<span class="stjerner stjerner--{{ s }}{% if include.str %} stjerner--{{ include.str }}{% endif %}" role="img" aria-label="{{ s }} av 3 stjerner. {{ label }}" title="{{ label }}">
+  {%- for i in (1..3) -%}
+    {%- if i <= s -%}<span class="stjerner__s stjerner__s--full" aria-hidden="true">★</span>{%- else -%}<span class="stjerner__s" aria-hidden="true">☆</span>{%- endif -%}
+  {%- endfor -%}
+</span>

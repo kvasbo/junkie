@@ -1,0 +1,33 @@
+---
+title: Lister
+description: Kuraterte lister fra Junkie – topp 5 kebab, beste sen-natt-mat og mer.
+permalink: /lister/
+---
+<header class="side__topp">
+  <h1 class="side__tittel">Lister</h1>
+  <p class="side__intro">Håndplukket. «Topp 5 kebab i Oslo», «beste sen-natt-mat» og andre lister vi mener noe om.</p>
+</header>
+{%- assign lister = site.lister | sort: "date" | reverse -%}
+{%- if lister.size > 0 -%}
+<ul class="rutenett rutenett--lister">
+  {%- for l in lister -%}
+  <li>
+    <article class="kort kort--liste">
+      <a class="kort__lenke" href="{{ l.url | relative_url }}">
+        <div class="kort__media">
+          {%- if l.image and l.image != site.default_image -%}{% include img.html src=l.image alt="" width=800 class="kort__bilde" %}{%- else -%}<div class="kort__plakat" aria-hidden="true">{% include ikon.html slug="annet" %}</div>{%- endif -%}
+          {%- if l.draft %}<span class="kort__utkast">Utkast</span>{% endif -%}
+        </div>
+        <div class="kort__tekst">
+          <h2 class="kort__tittel">{{ l.title }}</h2>
+          <p class="kort__utdrag">{{ l.description }}</p>
+          <p class="kort__meta">{{ l.items.size }} {% if l.items.size == 1 %}sted{% else %}steder{% endif %}</p>
+        </div>
+      </a>
+    </article>
+  </li>
+  {%- endfor -%}
+</ul>
+{%- else -%}
+<p class="tom">Ingen lister ennå.</p>
+{%- endif -%}

@@ -1,0 +1,10 @@
+{%- assign vs = include.venues | sort: "title" | sort: "score" | reverse -%}
+{%- if vs.size > 0 -%}
+<ul class="rutenett">
+  {%- for v in vs -%}
+  <li>{% include sted-kort.html venue=v %}</li>
+  {%- endfor -%}
+</ul>
+{%- else -%}
+<p class="tom">Ingen steder her ennå.</p>
+{%- endif -%}

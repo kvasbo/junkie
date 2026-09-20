@@ -1,0 +1,27 @@
+{%- comment -%}
+  Kort for én anmeldelse (forsidefeed). Bruk: {% include anmeldelse-kort.html review=r %}
+{%- endcomment -%}
+{%- assign r = include.review -%}
+{%- assign v = r.venue_doc -%}
+{%- assign k0 = v.categories | first -%}
+{%- assign b0 = r.images | first -%}
+<article class="kort kort--score-{{ r.score }}{% if r.draft %} kort--utkast{% endif %}">
+  <a class="kort__lenke" href="{{ r.lenke | relative_url }}">
+    <div class="kort__media">
+      {%- if r.image -%}
+        {% include img.html src=r.image alt=b0.alt width=800 class="kort__bilde" loading=include.loading %}
+      {%- else -%}
+        <div class="kort__plakat" aria-hidden="true">{% include ikon.html slug=k0 %}</div>
+      {%- endif -%}
+      <span class="kort__badge">{% include stjerner.html score=r.score %}</span>
+      {%- if r.draft %}<span class="kort__utkast">Utkast</span>{% endif -%}
+      {%- if v.closed %}<span class="kort__nedlagt">Nedlagt</span>{% endif -%}
+    </div>
+    <div class="kort__tekst">
+      <h3 class="kort__tittel">{{ r.title }}</h3>
+      <p class="kort__sted">{{ v.title }}{% if v.bydel_data %} <span class="kort__bydel">· {{ v.bydel_data.name }}</span>{% endif %}</p>
+      <p class="kort__utdrag">{{ r.excerpt }}</p>
+      <p class="kort__meta"><time datetime="{{ r.visited }}">Besøkt {{ r.visited_label }}</time>{% if r.price > 0 %} · <span class="pris">{{ r.price | kr }}</span>{% endif %}</p>
+    </div>
+  </a>
+</article>

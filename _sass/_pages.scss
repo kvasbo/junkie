@@ -1,0 +1,98 @@
+// Forside
+.hero {
+  padding: 8px 0 24px;
+  &__tittel { font-size: clamp(2.6rem, 9vw, 4.6rem); color: var(--rosa); text-shadow: 4px 4px 0 var(--ramme); -webkit-text-stroke: 1px var(--ramme); }
+  &__under { font-size: 1.25rem; max-width: 50ch; }
+  &__skala { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); li { display: flex; align-items: center; gap: 8px; } }
+}
+.intro { margin: 40px 0; }
+.testes {
+  margin: 40px 0 0;
+  &__intro { max-width: 62ch; }
+  &__liste {
+    list-style: none; padding: 0; margin: 0; display: grid; gap: 8px 24px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  &__el {
+    padding: 6px 0 6px 28px; position: relative; border-bottom: 2px dashed var(--ramme); font-weight: 700;
+    &::before { content: ""; position: absolute; left: 0; top: 10px; width: 16px; height: 16px; border: 2px solid var(--ramme); border-radius: 4px; background: var(--bg-alt); }
+    &--ferdig::before { background: var(--gronn); }
+    &--ferdig::after { content: "✓"; position: absolute; left: 3px; top: 4px; font-size: 0.9rem; color: #111; font-weight: 900; }
+  }
+}
+
+// Steds-side
+.sted {
+  &__navn { margin-bottom: 0.2em; }
+  &__score { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 0 16px; }
+  &__score-tekst { margin: 0; font-weight: 700; font-size: 1.1rem; }
+  &__kommentar { font-size: 1.15rem; margin-bottom: 20px; }
+  &__anbefalt {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 24px; padding: 12px 16px;
+    background: var(--gul); color: #111; border: var(--ramme-b) solid #111; border-radius: var(--radius); box-shadow: 5px 5px 0 var(--skygge);
+    a { color: #111; font-family: var(--font-display); font-size: 1.4rem; }
+  }
+  &__anbefalt-etikett { margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.85rem; }
+  &__info { margin-bottom: 32px; @media (min-width: 800px) { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; .kart { margin-top: 0; height: 100%; min-height: 240px; } } }
+  &__retter { margin-top: 12px; }
+  &__bunn { margin-top: 24px; }
+}
+.info {
+  &__rad { margin-bottom: 12px; }
+  dt { font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--demp); }
+  dd { margin: 2px 0 0; }
+}
+.tider { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+
+.rett {
+  margin: 0 0 36px;
+  &__tittel { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 4px solid var(--rosa); }
+  &__antall { font-family: var(--font-body); font-size: 0.9rem; font-weight: 400; color: var(--demp); }
+}
+.anmeldelse {
+  position: relative; margin: 18px 0 0; padding: 0 0 0 18px; border-left: 5px solid var(--score-0); scroll-margin-top: 20px;
+  &--score-1 { border-left-color: var(--score-1); }
+  &--score-2 { border-left-color: var(--score-2); }
+  &--score-3 { border-left-color: var(--score-3); }
+  &--revisit { margin-left: 14px; opacity: 0.92; }
+  &--utkast { outline: 3px dashed var(--gronn); outline-offset: 6px; }
+  &:target { background: color-mix(in srgb, var(--gul) 25%, transparent); border-radius: 0 var(--radius) var(--radius) 0; }
+  &__topp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  &__meta { margin: 0; color: var(--demp); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  &__anker { color: var(--demp); text-decoration: none; margin-left: 4px; &:hover { color: var(--lenke); } }
+  &__tekst { font-size: 1.1rem; }
+}
+.galleri {
+  display: flex; gap: 12px; margin: 0 0 14px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; padding-bottom: 6px;
+  &__el { flex: 0 0 100%; margin: 0; scroll-snap-align: start; @media (min-width: 700px) { flex-basis: 70%; } }
+  &:not(.galleri--flere) &__el { flex-basis: 100%; }
+  &__bilde { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: var(--ramme-b) solid var(--ramme); border-radius: var(--radius); }
+  &__tekst { font-size: 0.85rem; color: var(--demp); margin-top: 4px; }
+}
+
+// Liste-side
+.liste .rutenett--liste > li { position: relative; }
+
+// Søk
+.sok-stor { margin: 0 0 20px; max-width: 560px; }
+.sok-stor__felt {
+  width: 100%; font: inherit; font-size: 1.25rem; padding: 0.7rem 1rem;
+  border: var(--ramme-b) solid var(--ramme); border-radius: var(--radius); background: var(--bg-alt); color: var(--tekst);
+  box-shadow: 5px 5px 0 var(--skygge);
+}
+.sok-treff {
+  list-style: none; padding: 0; margin: 0; display: grid; gap: 10px;
+  &__el a {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px; text-decoration: none; color: var(--tekst);
+    background: var(--bg-alt); border: 2px solid var(--ramme); border-radius: var(--radius);
+    &:hover { background: var(--gul); color: #111; }
+  }
+  &__type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--demp); min-width: 3.2em; }
+  &__navn { font-weight: 700; }
+  &__sub { color: var(--demp); font-size: 0.9rem; }
+  &__score { margin-left: auto; }
+}
+
+// Kartside
+.kartside .hoved { padding: 0; }

@@ -1,0 +1,57 @@
+---
+title: Junkie
+description: Redaksjonell gatemat-guide for Oslo. Kvalitetssikrede anmeldelser av kebab, pizza, taco og pølse. Tre stjerner, ingen bullshit.
+permalink: /
+body_class: forside
+---
+{%- assign j = site.data.junkie -%}
+<section class="hero">
+  <h1 class="hero__tittel">Michelin-guiden for kebab.</h1>
+  <p class="hero__under">Anmeldelser av enkeltretter fra Oslos sjapper. Tre stjerner, ingen bullshit.</p>
+  <ul class="hero__skala" aria-label="Skalaen">
+    <li>{% include stjerner.html score=3 str="liten" %} Dette MÅ du prøve</li>
+    <li>{% include stjerner.html score=2 str="liten" %} Definitivt verdt en tur</li>
+    <li>{% include stjerner.html score=1 str="liten" %} Verdt et besøk</li>
+    <li>{% include stjerner.html score=0 str="liten" %} Anmeldt, ikke anbefalt</li>
+  </ul>
+</section>
+
+<section class="feed" aria-labelledby="feed-tittel">
+  <h2 class="seksjon__tittel" id="feed-tittel">Siste anmeldelser</h2>
+  {%- if j.feed.size > 0 -%}
+  <ul class="rutenett">
+    {%- for r in j.feed limit: 24 -%}
+    {%- assign lazy = "lazy" -%}{%- if forloop.index <= 2 -%}{%- assign lazy = "eager" -%}{%- endif -%}
+    <li>{% include anmeldelse-kort.html review=r loading=lazy %}</li>
+    {%- endfor -%}
+  </ul>
+  {%- else -%}
+  <p class="tom">Ingen anmeldelser publisert ennå. Vi spiser så fort vi kan.</p>
+  {%- endif -%}
+</section>
+
+<section class="intro prosa" aria-labelledby="intro-tittel">
+  <h2 class="seksjon__tittel" id="intro-tittel">Hva er Junkie?</h2>
+  {% capture intro %}{% include forside-intro.md %}{% endcapture %}{{ intro | markdownify }}
+  <p><a class="knapp" href="{{ '/om/' | relative_url }}">Les mer om Junkie</a></p>
+</section>
+
+{%- assign testes = site.data.testes -%}
+{%- if testes.steder.size > 0 -%}
+<section class="testes" aria-labelledby="testes-tittel">
+  <h2 class="seksjon__tittel" id="testes-tittel">{{ testes.title }}</h2>
+  <p class="testes__intro">{{ testes.intro }}</p>
+  <ul class="testes__liste">
+    {%- for navn in testes.steder -%}
+    {%- assign treff = j.venues | where: "title", navn | first -%}
+    <li class="testes__el{% if treff %} testes__el--ferdig{% endif %}">
+      {%- if treff -%}
+        <a href="{{ treff.url | relative_url }}">{{ navn }}</a> {% include stjerner.html score=treff.score str="liten" %}
+      {%- else -%}
+        {{ navn }}
+      {%- endif -%}
+    </li>
+    {%- endfor -%}
+  </ul>
+</section>
+{%- endif -%}

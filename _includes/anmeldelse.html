@@ -1,0 +1,35 @@
+{%- comment -%} Full anmeldelse på steds-siden. Bruk: {% include anmeldelse.html review=r revisit=true %} {%- endcomment -%}
+{%- assign r = include.review -%}
+<article class="anmeldelse anmeldelse--score-{{ r.score }}{% if include.revisit %} anmeldelse--revisit{% endif %}{% if r.draft %} anmeldelse--utkast{% endif %}" id="{{ r.anchor }}">
+  <header class="anmeldelse__topp">
+    {% include stjerner.html score=r.score str="stor" %}
+    <p class="anmeldelse__meta">
+      {%- if include.revisit %}<span class="merke">Revisit</span> {% endif -%}
+      {%- if r.draft %}<span class="merke merke--utkast">Utkast</span> {% endif -%}
+      <time datetime="{{ r.visited }}">Besøkt {{ r.visited_label }}</time>
+      {%- if r.price > 0 %} · <span class="pris" aria-label="Prisnivå {{ r.price }} av 3">{{ r.price | kr }}</span>{% endif -%}
+      <a class="anmeldelse__anker" href="#{{ r.anchor }}" aria-label="Lenke til denne anmeldelsen">#</a>
+    </p>
+  </header>
+  {%- if r.images.size > 0 -%}
+  <div class="galleri{% if r.images.size > 1 %} galleri--flere{% endif %}" role="group" aria-label="Bilder av {{ r.title }}">
+    {%- for b in r.images -%}
+    <figure class="galleri__el">
+      {% include img.html src=b.src alt=b.alt width=1200 sizes="(min-width: 900px) 700px, 100vw" class="galleri__bilde" %}
+      {%- if b.caption %}<figcaption class="galleri__tekst">{{ b.caption }}</figcaption>{% endif -%}
+    </figure>
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+  <div class="anmeldelse__tekst prosa">
+    {{ r.content | markdownify }}
+  </div>
+  {%- if r.tags.size > 0 -%}
+  <ul class="tags" aria-label="Tags">
+    {%- for t in r.tags -%}
+    {%- assign ts = r.tag_slugs[forloop.index0] -%}
+    <li><a class="tag" href="{{ '/tag/' | append: ts | append: '/' | relative_url }}">#{{ t }}</a></li>
+    {%- endfor -%}
+  </ul>
+  {%- endif -%}
+</article>

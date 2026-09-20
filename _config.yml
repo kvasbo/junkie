@@ -1,0 +1,90 @@
+title: Junkie
+tagline: Michelin-guiden for kebab
+description: Redaksjonell gatemat-guide for Oslo. Kvalitetssikrede anmeldelser av kebab, pizza, taco og pølse. Tre stjerner, ingen bullshit.
+url: https://junkie.no
+baseurl: ""
+lang: nb
+timezone: Europe/Oslo
+author: Junkie
+
+# Oslo sentrum – utgangspunkt for kartet
+map:
+  center: [59.9139, 10.7522]
+  zoom: 12
+  # Flisleverandør. OSM standard er gratis, men ikke ment for stor trafikk.
+  # Alternativ: https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png
+  tiles: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+
+# Bilder: i produksjon (JEKYLL_ENV=production) skrives bilde-URL-er om til
+# Cloudflare Image Transformations (/cdn-cgi/image/...). Krever at
+# "Transformations" er skrudd på for sonen i Cloudflare-dashbordet.
+cloudflare_images: true
+
+# Standard OG-bilde for sider uten eget bilde
+default_image: /assets/img/og-default.png
+
+collections:
+  steder:
+    output: true
+    permalink: /steder/:name/
+  anmeldelser:
+    output: false
+  lister:
+    output: true
+    permalink: /lister/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: steder
+    values:
+      layout: sted
+      status: open
+      map: true
+      seo:
+        type: WebPage
+  - scope:
+      path: ""
+      type: anmeldelser
+    values:
+      status: draft
+  - scope:
+      path: ""
+      type: lister
+    values:
+      layout: liste
+      status: draft
+      seo:
+        type: WebPage
+  - scope:
+      path: ""
+    values:
+      layout: default
+      image: /assets/img/og-default.png
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+sass:
+  style: compressed
+  sass_dir: _sass
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+include:
+  - _headers
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - agents.md
+  - bin/
+  - vendor/
+  - node_modules/
+  - .ruby-version
+  - LICENSE

@@ -1,0 +1,19 @@
+---
+layout: default
+---
+<article class="liste">
+  <header class="side__topp">
+    <p class="brodsmuler"><a href="{{ '/lister/' | relative_url }}">Lister</a></p>
+    <h1 class="side__tittel">{{ page.title }}{% if page.draft %} <span class="merke merke--utkast">Utkast</span>{% endif %}</h1>
+    {%- if page.intro != "" -%}
+    <div class="side__intro prosa">{{ page.intro | markdownify }}</div>
+    {%- endif -%}
+    {%- if page.date %}<p class="side__meta"><time datetime="{{ page.date | date: '%Y-%m-%d' }}">Oppdatert {{ page.date | date: '%-d. ' }}{{ page.date | date: '%Y-%m' | month_label }}</time></p>{% endif -%}
+  </header>
+  <ol class="rutenett rutenett--liste">
+    {%- for item in page.items -%}
+    <li>{% include sted-kort.html venue=item.venue review=item.review note=item.note nummer=forloop.index archived=item.archived %}</li>
+    {%- endfor -%}
+  </ol>
+  {%- if page.items.size == 0 -%}<p class="tom">Lista er tom ennå.</p>{%- endif -%}
+</article>

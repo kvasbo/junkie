@@ -1,0 +1,67 @@
+// Fargepalett og typografi. Lys modus er standard, mørk følger OS.
+:root {
+  color-scheme: light dark;
+
+  --font-display: "Lilita One", "Arial Black", Impact, "Helvetica Neue", sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --rosa: #ff2e88;
+  --gul: #ffe600;
+  --gronn: #39ff14;
+  --blaa: #4da3ff;
+
+  --bg: #fff8e7;
+  --bg-alt: #ffffff;
+  --tekst: #111111;
+  --demp: #4d4d4d;
+  --ramme: #111111;
+  --lenke: #cc0057;
+  --fokus: #005bff;
+  --skygge: #111111;
+
+  --score-0: #d4d4d4;
+  --score-1: #d98b3f;
+  --score-2: #7fbcff;
+  --score-3: #ffc400;
+  --score-tekst: #111111;
+
+  --logo-bg: var(--gul);
+  --logo-tekst: #111;
+  --logo-ramme: #111;
+  --logo-stjerne: var(--rosa);
+  --ikon-fyll: var(--gul);
+
+  --radius: 14px;
+  --ramme-b: 3px;
+  --skygge-off: 6px;
+  --maks: 1120px;
+  --gutter: 16px;
+}
+
+@mixin dark {
+  --bg: #0f0f12;
+  --bg-alt: #1b1b21;
+  --tekst: #f6f6f6;
+  --demp: #bdbdc4;
+  --ramme: #f6f6f6;
+  --lenke: #ff7ab8;
+  --fokus: #39ff14;
+  --skygge: #ff2e88;
+
+  --score-0: #4a4a52;
+  --score-1: #c4762c;
+  --score-2: #5aa8ff;
+  --score-3: #ffcc1a;
+  --score-tekst: #111111;
+
+  --logo-bg: #0f0f12;
+  --logo-tekst: var(--gul);
+  --logo-ramme: var(--gronn);
+  --logo-stjerne: var(--rosa);
+  --ikon-fyll: var(--rosa);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dark; }
+}
+:root[data-theme="dark"] { @include dark; }

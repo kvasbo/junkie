@@ -1,0 +1,14 @@
+---
+title: Kategorier
+description: Kebab, pizza, taco, pølse og annet – Junkies kategorier.
+permalink: /kategori/
+---
+{%- assign j = site.data.junkie -%}
+<header class="side__topp">
+  <h1 class="side__tittel">Kategorier</h1>
+</header>
+<ul class="termliste termliste--kategorier">
+  {%- for k in j.kategorier -%}
+  <li><a class="termliste__lenke" href="{{ '/kategori/' | append: k.slug | append: '/' | relative_url }}">{% include ikon.html slug=k.slug %} {{ k.name }} <span class="termliste__antall">{{ k.count }}</span></a></li>
+  {%- endfor -%}
+</ul>

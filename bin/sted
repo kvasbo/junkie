@@ -1,0 +1,103 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# Slår opp et sted i Google Places API (New) og skriver ut front matter
+# klar til å limes inn i _steder/<slug>.md.
+#
+#   GOOGLE_PLACES_API_KEY=... bin/sted "Kebab Huset Grønland"
+#   bin/sted "Syverkiosken" --alle      # vis alle treff, ikke bare det første
+#   bin/sted "Syverkiosken" --skriv     # skriv _steder/<slug>.md direkte (feiler hvis fila finnes)
+#
+# Nøkkelen kan også ligge i .env (GOOGLE_PLACES_API_KEY=...). API-et må ha
+# "Places API (New)" aktivert i Google Cloud-prosjektet.
+#
+require "net/http"
+require "json"
+require "uri"
+require "yaml"
+
+ROOT = File.expand_path("..", __dir__)
+
+def env_key
+  return ENV["GOOGLE_PLACES_API_KEY"] if ENV["GOOGLE_PLACES_API_KEY"]
+  env = File.join(ROOT, ".env")
+  return unless File.exist?(env)
+  line = File.readlines(env).find { |l| l.start_with?("GOOGLE_PLACES_API_KEY=") }
+  line&.split("=", 2)&.last&.strip&.delete('"')
+end
+
+def slugify(s)
+  s.to_s.downcase.tr("æøå", "aoa").gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
+end
+
+def post(path, body, key, mask)
+  uri = URI("https://places.googleapis.com/v1/#{path}")
+  req = Net::HTTP::Post.new(uri)
+  req["Content-Type"] = "application/json"
+  req["X-Goog-Api-Key"] = key
+  req["X-Goog-FieldMask"] = mask
+  req.body = body.to_json
+  res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
+  abort "Google Places svarte #{res.code}: #{res.body}" unless res.is_a?(Net::HTTPSuccess)
+  JSON.parse(res.body)
+end
+
+query = ARGV.reject { |a| a.start_with?("--") }.join(" ")
+alle  = ARGV.include?("--alle")
+skriv = ARGV.include?("--skriv")
+abort "Bruk: bin/sted \"<søk>\" [--alle] [--skriv]" if query.empty?
+key = env_key or abort "Mangler GOOGLE_PLACES_API_KEY (miljøvariabel eller .env)"
+
+mask = %w[
+  places.id places.displayName places.formattedAddress places.location
+  places.googleMapsUri places.regularOpeningHours.weekdayDescriptions places.businessStatus
+].join(",")
+
+res = post("places:searchText", {
+  textQuery: query,
+  languageCode: "no",
+  regionCode: "NO",
+  locationBias: { circle: { center: { latitude: 59.9139, longitude: 10.7522 }, radius: 15_000 } },
+  maxResultCount: alle ? 10 : 1,
+}, key, mask)
+
+places = res["places"] || []
+abort "Ingen treff på «#{query}»" if places.empty?
+
+if alle
+  places.each_with_index do |p, i|
+    puts "#{i + 1}. #{p.dig('displayName', 'text')} – #{p['formattedAddress']} (#{p['businessStatus']})"
+  end
+  puts "\nKjør igjen med et mer presist søk for å få front matter."
+  exit
+end
+
+p = places.first
+name = p.dig("displayName", "text")
+slug = slugify(name)
+fm = {
+  "title" => name,
+  "categories" => ["kebab"],
+  "bydel" => "",
+  "address" => p["formattedAddress"],
+  "lat" => p.dig("location", "latitude")&.round(6),
+  "lng" => p.dig("location", "longitude")&.round(6),
+  "google_place_id" => p["id"],
+  "google_maps_url" => p["googleMapsUri"],
+  "opening_hours" => p.dig("regularOpeningHours", "weekdayDescriptions") || [],
+  "cover_image" => nil,
+  "score_override" => nil,
+  "status" => p["businessStatus"] == "CLOSED_PERMANENTLY" ? "closed" : "open",
+  "closed_at" => nil,
+}
+out = fm.to_yaml.sub(/\A---\n/, "---\n") + "---\n\n"
+
+if skriv
+  path = File.join(ROOT, "_steder", "#{slug}.md")
+  abort "Finnes allerede: #{path}" if File.exist?(path)
+  File.write(path, out)
+  puts "Skrev _steder/#{slug}.md – husk å sette categories og bydel."
+else
+  puts "# _steder/#{slug}.md"
+  puts out
+end

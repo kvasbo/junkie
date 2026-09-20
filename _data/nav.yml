@@ -1,0 +1,9 @@
+- { title: Steder, url: /steder/ }
+- { title: Kebab, url: /kategori/kebab/ }
+- { title: Pizza, url: /kategori/pizza/ }
+- { title: Taco, url: /kategori/taco/ }
+- { title: Pølse, url: /kategori/polse/ }
+- { title: Lister, url: /lister/ }
+- { title: Bydeler, url: /bydel/ }
+- { title: Kart, url: /kart/ }
+- { title: Om, url: /om/ }

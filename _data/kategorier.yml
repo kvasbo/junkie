@@ -1,0 +1,16 @@
+# Faste kategorier for steder. Slug brukes i front matter (categories: [kebab, pizza]).
+- slug: kebab
+  name: Kebab
+  description: Kebab, döner, rull og tallerken. Oslos nasjonalrett.
+- slug: pizza
+  name: Pizza
+  description: Slice, hel pizza, kebabpizza. Alt som er rundt og har ost.
+- slug: taco
+  name: Taco
+  description: Taco, burrito, quesadilla og annet fra tacobarene.
+- slug: polse
+  name: Pølse
+  description: Pølse i brød, lompe, kiosk-klassikere og gourmetpølser.
+- slug: annet
+  name: Annet
+  description: Burger, falafel, wok, nudler og alt annet fra gatekjøkkenet.

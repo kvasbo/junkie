@@ -1,0 +1,14 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ff2e88" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f0f12" media="(prefers-color-scheme: dark)">
+  {% seo title=false %}
+  <title>{% if page.title and page.url != "/" %}{{ page.title }} – {{ site.title }}{% else %}{{ site.title }} – {{ site.tagline }}{% endif %}</title>
+  <link rel="preload" href="{{ '/assets/fonts/lilita-one-latin.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {% if page.map %}<link rel="stylesheet" href="{{ '/assets/vendor/leaflet/leaflet.css' | relative_url }}">{% endif %}
+  <link rel="icon" href="{{ '/assets/img/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="alternate" type="application/atom+xml" title="{{ site.title }} – nye anmeldelser" href="{{ '/feed.xml' | absolute_url }}">
+</head>
