@@ -1,6 +1,6 @@
 # Junkie
 
-Redaksjonell gatemat-guide for Oslo. «Michelin-guiden for kebab.» Statisk Jekyll-side som hostes på Cloudflare Pages.
+Redaksjonell gatemat-guide for Oslo. «Michelin-guiden for kebab.» Statisk Jekyll-side som hostes på Cloudflare (Workers static assets).
 
 Produktspesifikasjonen ligger i [agents.md](agents.md). Dette dokumentet beskriver hvordan siden er bygget og hvordan du skriver innhold.
 
@@ -129,22 +129,24 @@ bin/sted "Syverkiosken" --skriv     # skriv _steder/syverkiosken.md direkte
 
 Nøkkelen må ha «Places API (New)» aktivert i Google Cloud-prosjektet.
 
-## Deploy til Cloudflare Pages
+## Deploy til Cloudflare
 
-Siden bygges av Cloudflare Pages via git-integrasjon. Opprett et Pages-prosjekt koblet til dette repoet med disse innstillingene:
+Siden bygges av Cloudflare Workers Builds via git-integrasjon (Workers & Pages → Create → Workers → Import a repository). Innstillinger:
 
 | Innstilling | Verdi |
 |-------------|-------|
-| Production branch | `main` |
 | Build command | `bundle exec jekyll build` |
-| Build output directory | `_site` |
-| Miljøvariabel `JEKYLL_ENV` | `production` |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+| Build variable `JEKYLL_ENV` | `production` |
 
-Ruby-versjonen leses fra `.ruby-version`. Hver push til `main` deployer produksjon, andre branches får forhåndsvisnings-URL-er (der er `JEKYLL_ENV` også `production` med mindre du setter noe annet for preview-miljøet).
+`wrangler.jsonc` forteller wrangler at `_site/` skal lastes opp som statiske filer, at `/steder/foo` og `/steder/foo/` er samme side, og at `404.html` brukes ved ukjente URL-er. Ruby-versjonen leses fra `.ruby-version`. Hver push til `main` deployer produksjon; andre branches får forhåndsvisnings-URL-er.
+
+Skal du heller bruke et klassisk Pages-prosjekt: samme build command, output directory `_site`, ingen deploy command.
 
 `_headers` setter cache- og sikkerhetsheadere. `sitemap.xml`, `robots.txt` og `feed.xml` (Atom) genereres automatisk.
 
-Koble domenet `junkie.no` til Pages-prosjektet under Custom domains.
+Koble domenet `junkie.no` til Workeren under Settings → Domains & Routes.
 
 ## Struktur
 
@@ -167,5 +169,5 @@ bin/                 ny (lag filer fra mal), sted (Google Places-oppslag)
 
 - [ ] 20+ publiserte anmeldelser
 - [ ] Transformations skrudd på for sonen i Cloudflare
-- [ ] `junkie.no` koblet til Pages-prosjektet
+- [ ] `junkie.no` koblet til Workeren i Cloudflare
 - [ ] Egen logo (dagens er en enkel SVG-ordmerke i `_includes/logo.svg`, favicon i `assets/img/favicon.svg`, OG-bilde i `assets/img/og-default.png`)

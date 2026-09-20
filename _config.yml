@@ -79,6 +79,7 @@ include:
   - _headers
 
 exclude:
+  - wrangler.jsonc
   - Gemfile
   - Gemfile.lock
   - README.md
