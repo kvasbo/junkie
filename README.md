@@ -1,6 +1,6 @@
 # Junkie
 
-Redaksjonell gatemat-guide for Oslo. «Michelin-guiden for kebab.» Statisk Jekyll-side som hostes på Cloudflare Pages.
+Redaksjonell gatemat-guide for Oslo. «Michelin-guiden for kebab.» Statisk Jekyll-side som hostes på Cloudflare (Workers static assets).
 
 Produktspesifikasjonen ligger i [agents.md](agents.md). Dette dokumentet beskriver hvordan siden er bygget og hvordan du skriver innhold.
 
@@ -169,5 +169,5 @@ bin/                 ny (lag filer fra mal), sted (Google Places-oppslag)
 
 - [ ] 20+ publiserte anmeldelser
 - [ ] Transformations skrudd på for sonen i Cloudflare
-- [ ] `junkie.no` koblet til Pages-prosjektet
+- [ ] `junkie.no` koblet til Workeren i Cloudflare
 - [ ] Egen logo (dagens er en enkel SVG-ordmerke i `_includes/logo.svg`, favicon i `assets/img/favicon.svg`, OG-bilde i `assets/img/og-default.png`)
