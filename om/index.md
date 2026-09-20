@@ -6,7 +6,7 @@ permalink: /om/
 <header class="side__topp">
   <h1 class="side__tittel">Om Junkie</h1>
 </header>
-<div class="prosa">
+<div class="prosa" markdown="1">
 {% capture intro %}{% include forside-intro.md %}{% endcapture %}{{ intro | markdownify }}
 
 ## Slik fungerer stjernene
