@@ -6,7 +6,7 @@ gem "jekyll-seo-tag"
 gem "sass-embedded", "~> 1.80"
 gem "webrick"
 
-# Standardbiblioteker som er "bundled gems" i Ruby 4 og må listes eksplisitt
+# Standardbiblioteker som er "bundled gems" i Ruby 3.4+ og må listes eksplisitt
 gem "logger"
 gem "csv"
 gem "base64"

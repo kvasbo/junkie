@@ -19,7 +19,7 @@ Valg tatt for den statiske utgaven:
 - [x] **Kart:** Leaflet (selvhostet) med OSM-fliser, data fra `/steder.json`.
 - [x] **Stedsdata:** Manuell front matter. `bin/sted` henter navn, adresse, koordinater og åpningstider fra Google Places API (New) og skriver ut front matter.
 - [x] **Kategori-, tag- og bydelssider:** Genereres av en Jekyll-plugin (`_plugins/junkie.rb`) som også regner ut steds-score, anbefalt rett, ankerpunkter og feed.
-- [x] **Deploy:** Cloudflare Pages med git-integrasjon. `bundle exec jekyll build`, output `_site`, `JEKYLL_ENV=production`. Ruby-versjon fra `.ruby-version`.
+- [x] **Deploy:** Cloudflare Pages med git-integrasjon. `bundle exec jekyll build`, output `_site`, `JEKYLL_ENV=production`. Ingen Ruby-pin – byggemiljøets forhåndsinstallerte Ruby brukes.
 - [x] **Typografi:** Lilita One (OFL) selvhostet for overskrifter, system-sans for brødtekst.
 - [x] **Auth, brukere, Litestream, SQLite, Kamal, DigitalOcean:** Utgår – ikke relevant for en statisk side.
 - [x] **RSS og sitemap:** Med fra start (Atom-feed på `/feed.xml`, `sitemap.xml` via jekyll-sitemap).
