@@ -6,7 +6,7 @@ title: Lammeshawarma
 score: 2                            # 0–3 stjerner
 visited: 2026-04
 date: 2026-04-15
-status: draft                      # draft | published | archived
+status: published                      # draft | published | archived
 tags: [shawarma, rent kjøtt]
 images:                            # Valgfri. Legg filene i assets/img/anmeldelser/<sted>-<rett>-<YYYY-MM>/
   - src: /assets/img/anmeldelser/mediterranean-lammerull-202604.jpg

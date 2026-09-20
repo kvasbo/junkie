@@ -4,9 +4,9 @@
 venue: taasen
 title: Kebab
 score: 0                           # 0–3 stjerner
-visited: 2026-09
-date: 2026-09-20
-status: draft                      # draft | published | archived
+visited: 2026-04
+date: 2026-04-14
+status: published                      # draft | published | archived
 tags: [kebab, rent kjøtt, hjemmelaget pita]
 images:                            # Valgfri. Legg filene i assets/img/anmeldelser/<sted>-<rett>-<YYYY-MM>/
   - src: /assets/img/anmeldelser/taasen-202604.jpg
