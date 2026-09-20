@@ -2,9 +2,9 @@ _site/
 .jekyll-cache/
 .jekyll-metadata
 .sass-cache/
-vendor/
+/vendor/
 .bundle/
-node_modules/
+/node_modules/
 .env
 .DS_Store
 .wrangler/
