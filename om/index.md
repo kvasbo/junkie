@@ -22,7 +22,8 @@ Junkie anmelder **retter**, ikke steder. Hver rett får null til tre stjerner. S
 
 Et sted får automatisk scoren til sin beste rett. Har sjappa én ★★★-kebab og to ★☆☆-pizzaer, er den et ★★★-sted – fordi det finnes en grunn til å gå dit. Samme rett kan anmeldes på nytt senere; alle besøkene vises som en tidslinje på steds-siden.
 
-## Uavhengig
+## Kan jeg bidra?
 
-Ingen betalte omtaler, ingen sponsede plasseringer. Alt er spist og betalt av Junkie selv.
+Jepp! Send epost med tips til hei@junkie.no
+
 </div>
