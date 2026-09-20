@@ -155,7 +155,6 @@ Jekyll::Hooks.register :site, :post_read do |site|
     bslug = v.data["bydel"].to_s.empty? ? nil : Junkie.slugify(v.data["bydel"])
     v.data["bydel_slug"] = bslug
     v.data["bydel_data"] = bslug && (bydeler[bslug] || { "slug" => bslug, "name" => v.data["bydel"].to_s })
-    v.data["opening_hours"] = Array(v.data["opening_hours"]).map(&:to_s)
     v.data["summary"] = v.content.to_s.strip
     v.data["has_coords"] = !v.data["lat"].nil? && !v.data["lng"].nil?
 

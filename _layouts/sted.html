@@ -44,12 +44,6 @@ layout: default
         <dd>{{ v.address }}{% if v.google_maps_url %} · <a href="{{ v.google_maps_url }}" rel="noopener">Google Maps</a>{% endif %}</dd>
       </div>
       {%- endif -%}
-      {%- if v.opening_hours.size > 0 -%}
-      <div class="info__rad">
-        <dt>Åpningstider</dt>
-        <dd><ul class="tider">{% for t in v.opening_hours %}<li>{{ t }}</li>{% endfor %}</ul></dd>
-      </div>
-      {%- endif -%}
     </dl>
     {%- if v.has_coords -%}
     <div class="kart kart--liten" id="kart" data-lat="{{ v.lat }}" data-lng="{{ v.lng }}" data-score="{{ v.score }}" data-navn="{{ v.title | escape }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart som viser {{ v.title }}" role="img"></div>

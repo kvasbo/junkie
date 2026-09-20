@@ -12,7 +12,6 @@
   "servesCuisine": {{ v.category_data | map: "name" | jsonify }},
   {%- if v.google_maps_url %}"hasMap": {{ v.google_maps_url | jsonify }},{% endif %}
   {%- if v.closed %}"permanentlyClosed": true,{% endif %}
-  {%- if v.opening_hours.size > 0 %}"openingHours": {{ v.opening_hours | jsonify }},{% endif %}
   "aggregateRating": {"@type": "AggregateRating", "ratingValue": {{ v.score }}, "bestRating": 3, "worstRating": 0, "ratingCount": {{ v.review_count }}},
   "review": [
     {%- for r in v.reviews %}

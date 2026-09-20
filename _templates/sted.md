@@ -8,9 +8,6 @@ address: Grønlandsleiret 1, 0190 Oslo
 lat: 59.9127                       # Koordinater (høyreklikk i Google Maps for å kopiere)
 lng: 10.7617
 google_maps_url:                   # Valgfri – lenke vises under adressen
-opening_hours:                     # Valgfri liste med tekstlinjer
-  - "mandag: 11:00–23:00"
-  - "tirsdag: 11:00–23:00"
 cover_image:                       # Valgfri, f.eks. /assets/img/steder/kebab-huset/fasade.jpg (brukes som OG-bilde)
 score_override:                    # Tom = automatisk (høyeste rett-score). 0–3 for å overstyre.
 status: open                       # open | closed
