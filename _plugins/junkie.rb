@@ -237,6 +237,10 @@ Jekyll::Hooks.register :site, :post_read do |site|
     l.data["image"] = items.map { |i| i["review"].data["image"] || i["venue"].data["cover_image"] }.compact.first || default_image
   end
   site.collections["lister"].docs.reject! { |l| !l.data["public"] } if site.collections["lister"]
+  # Uten lister: hold /lister/ ute av menyen (header.html) og sitemap
+  if site.collections["lister"].nil? || site.collections["lister"].docs.empty?
+    site.pages.find { |p| p.url == "/lister/" }&.data&.[]=("sitemap", false)
+  end
 
   # --- feed: nyeste publiserte anmeldelser, maks én per sted --------------
   seen = {}

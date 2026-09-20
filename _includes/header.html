@@ -14,6 +14,7 @@
   <nav class="meny" aria-label="Hovedmeny">
     <ul class="meny__liste">
       {% for item in site.data.nav %}
+      {% if item.url == '/lister/' and site.lister.size == 0 %}{% continue %}{% endif %}
       {% assign aktiv = false %}
       {% if page.url == item.url %}{% assign aktiv = true %}{% elsif item.url != "/" and page.url contains item.url %}{% assign aktiv = true %}{% endif %}
       <li><a class="meny__lenke{% if aktiv %} meny__lenke--aktiv{% endif %}" href="{{ item.url | relative_url }}"{% if aktiv %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
