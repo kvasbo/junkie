@@ -6,7 +6,7 @@ Produktspesifikasjonen ligger i [agents.md](agents.md). Dette dokumentet beskriv
 
 ## Kom i gang lokalt
 
-Krever Ruby (se `.ruby-version`) og Bundler.
+Krever Ruby (3.2 eller nyere) og Bundler.
 
 ```sh
 bundle install
@@ -140,7 +140,7 @@ Siden bygges av Cloudflare Workers Builds via git-integrasjon (Workers & Pages �
 | Root directory | `/` |
 | Build variable `JEKYLL_ENV` | `production` |
 
-`wrangler.jsonc` forteller wrangler at `_site/` skal lastes opp som statiske filer, at `/steder/foo` og `/steder/foo/` er samme side, og at `404.html` brukes ved ukjente URL-er. Ruby-versjonen leses fra `.ruby-version`. Hver push til `main` deployer produksjon; andre branches får forhåndsvisnings-URL-er.
+`wrangler.jsonc` forteller wrangler at `_site/` skal lastes opp som statiske filer, at `/steder/foo` og `/steder/foo/` er samme side, og at `404.html` brukes ved ukjente URL-er. Ruby-versjonen er ikke pinnet, så Cloudflare bruker sin forhåndsinstallerte Ruby (3.2). Andre versjoner må kompileres i byggemiljøet og tar lang tid. Hver push til `main` deployer produksjon; andre branches får forhåndsvisnings-URL-er.
 
 Skal du heller bruke et klassisk Pages-prosjekt: samme build command, output directory `_site`, ingen deploy command.
 
