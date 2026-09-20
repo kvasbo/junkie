@@ -7,7 +7,6 @@
       {%- if include.revisit %}<span class="merke">Revisit</span> {% endif -%}
       {%- if r.draft %}<span class="merke merke--utkast">Utkast</span> {% endif -%}
       <time datetime="{{ r.visited }}">Besøkt {{ r.visited_label }}</time>
-      {%- if r.price > 0 %} · <span class="pris" aria-label="Prisnivå {{ r.price }} av 3">{{ r.price | kr }}</span>{% endif -%}
       <a class="anmeldelse__anker" href="#{{ r.anchor }}" aria-label="Lenke til denne anmeldelsen">#</a>
     </p>
   </header>

@@ -1,6 +1,6 @@
 # Junkie
 
-Redaksjonell gatemat-guide for Oslo. «Michelin-guiden for kebab.» Statisk Jekyll-side som hostes på Cloudflare (Workers static assets).
+Redaksjonell gatemat-guide for Oslo. Junkfood som faktisk er verdt turen. Statisk Jekyll-side som hostes på Cloudflare (Workers static assets).
 
 Produktspesifikasjonen ligger i [agents.md](agents.md). Dette dokumentet beskriver hvordan siden er bygget og hvordan du skriver innhold.
 
@@ -68,7 +68,6 @@ Et sted vises bare når det har minst én publisert anmeldelse. Steds-score er a
 venue: kebab-huset             # filnavn i _steder/ uten .md
 title: Kebab stor m/hvitløk    # rettens navn
 score: 3                       # 0–3
-price: 2                       # 1–3 (kr / kr kr / kr kr kr)
 visited: 2026-03               # måned + år
 date: 2026-03-15               # publiseringsdato, styrer feed-rekkefølge
 status: published              # draft | published | archived

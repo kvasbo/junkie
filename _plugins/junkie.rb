@@ -114,11 +114,6 @@ module Junkie
     def junkie_excerpt(text, length = 180)
       Junkie.excerpt(text, length.to_i)
     end
-
-    def kr(price)
-      n = price.to_i.clamp(0, 3)
-      n.zero? ? "" : (["kr"] * n).join(" ")
-    end
   end
 end
 Liquid::Template.register_filter(Junkie::Filters)
@@ -144,7 +139,6 @@ Jekyll::Hooks.register :site, :post_read do |site|
     r.data["key"]     = r.basename_without_ext
     r.data["status"]  = (r.data["status"] || "draft").to_s
     r.data["score"]   = Junkie.clamp_score(r.data["score"]) || 0
-    r.data["price"]   = r.data["price"].to_i
     r.data["visited"] = Junkie.month_key(r.data["visited"])
     r.data["visited_label"] = Junkie.month_label(r.data["visited"])
     r.data["dish_slug"] = Junkie.slugify(r.data["title"])

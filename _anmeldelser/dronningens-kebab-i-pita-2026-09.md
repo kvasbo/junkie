@@ -4,7 +4,6 @@
 venue: dronningens
 title: Kebab i pita
 score: 0                           # 0–3 stjerner
-price: 0                           # 1 = kr, 2 = kr kr, 3 = kr kr kr (0/tom = ikke oppgitt)
 visited: 2026-09
 date: 2026-09-20
 status: published                      # draft | published | archived

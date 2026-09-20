@@ -11,7 +11,7 @@ permalink: /om/
 
 ## Slik fungerer stjernene
 
-Junkie anmelder **retter**, ikke steder. Hver rett får null til tre stjerner, inspirert av Michelin-guiden: stjerner er anbefalinger, og null stjerner betyr at stedet er besøkt, men ikke nådde opp. Ingen halvstjerner, ingen 7/10.
+Junkie anmelder **retter**, ikke steder. Hver rett får null til tre stjerner. Stjerner er anbefalinger, og null stjerner betyr at stedet er besøkt, men ikke nådde opp. Ingen halvstjerner, ingen 7/10.
 
 <ul class="hero__skala">
   <li>{% include stjerner.html score=3 str="liten" %} Eksepsjonell – dette MÅ du prøve</li>
@@ -21,8 +21,6 @@ Junkie anmelder **retter**, ikke steder. Hver rett får null til tre stjerner, i
 </ul>
 
 Et sted får automatisk scoren til sin beste rett. Har sjappa én ★★★-kebab og to ★☆☆-pizzaer, er den et ★★★-sted – fordi det finnes en grunn til å gå dit. Samme rett kan anmeldes på nytt senere; alle besøkene vises som en tidslinje på steds-siden.
-
-Prisnivå angis grovt: **kr** (billig), **kr kr** (normalt), **kr kr kr** (dyrt for å være sjappe).
 
 ## Uavhengig
 
