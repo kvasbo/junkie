@@ -79,26 +79,6 @@ end
 # ---------------------------------------------------------------------------
 module Junkie
   module Filters
-    # Bilde-URL via Cloudflare Image Transformations i produksjon.
-    # {{ "/assets/img/foo.jpg" | cf_image: 800 }}
-    def cf_image(src, width = 800, extra = nil)
-      return src if src.nil? || src.to_s.empty?
-      site = @context.registers[:site]
-      return src unless Junkie.production? && site.config["cloudflare_images"]
-      return src if src.to_s.start_with?("http")
-      opts = ["width=#{width.to_i}", "quality=82", "format=auto", "fit=scale-down"]
-      opts << extra if extra && !extra.to_s.empty?
-      "/cdn-cgi/image/#{opts.join(',')}/#{src.to_s.sub(%r{\A/}, '')}"
-    end
-
-    # srcset for gitt bilde. Kun i produksjon (ellers finnes ingen varianter).
-    def cf_srcset(src, widths = "480,800,1200,1600")
-      site = @context.registers[:site]
-      return nil unless Junkie.production? && site.config["cloudflare_images"]
-      return nil if src.to_s.start_with?("http")
-      widths.to_s.split(",").map(&:strip).map { |w| "#{cf_image(src, w)} #{w}w" }.join(", ")
-    end
-
     def junkie_slugify(str)
       Junkie.slugify(str)
     end

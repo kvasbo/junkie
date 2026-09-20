@@ -9,7 +9,7 @@
   <a class="kort__lenke" href="{{ r.lenke | relative_url }}">
     <div class="kort__media">
       {%- if r.image -%}
-        {% include img.html src=r.image alt=b0.alt width=800 class="kort__bilde" loading=include.loading %}
+        {% include img.html src=r.image alt=b0.alt class="kort__bilde" loading=include.loading %}
       {%- else -%}
         <div class="kort__plakat" aria-hidden="true">{% include ikon.html slug=k0 %}</div>
       {%- endif -%}

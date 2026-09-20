@@ -1,11 +1,6 @@
 {%- comment -%}
-  Responsivt bilde via Cloudflare Image Transformations i produksjon.
-  Bruk: {% include img.html src=bilde.src alt=bilde.alt width=800 sizes="(min-width: 700px) 50vw, 100vw" class="kort__bilde" %}
+  Bilde. Bruk: {% include img.html src=bilde.src alt=bilde.alt class="kort__bilde" %}
 {%- endcomment -%}
-{%- assign w = include.width | default: 800 -%}
-{%- assign srcset = include.src | cf_srcset -%}
-<img src="{{ include.src | cf_image: w | relative_url }}"
-  {%- if srcset %} srcset="{{ srcset }}" sizes="{{ include.sizes | default: '(min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw' }}"{% endif %}
-  alt="{{ include.alt | default: '' | escape }}"
+<img src="{{ include.src | relative_url }}" alt="{{ include.alt | default: '' | escape }}"
   {%- if include.class %} class="{{ include.class }}"{% endif %}
   loading="{{ include.loading | default: 'lazy' }}" decoding="async">

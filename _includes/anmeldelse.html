@@ -14,7 +14,7 @@
   <div class="galleri{% if r.images.size > 1 %} galleri--flere{% endif %}" role="group" aria-label="Bilder av {{ r.title }}">
     {%- for b in r.images -%}
     <figure class="galleri__el">
-      {% include img.html src=b.src alt=b.alt width=1200 sizes="(min-width: 900px) 700px, 100vw" class="galleri__bilde" %}
+      {% include img.html src=b.src alt=b.alt class="galleri__bilde" %}
       {%- if b.caption %}<figcaption class="galleri__tekst">{{ b.caption }}</figcaption>{% endif -%}
     </figure>
     {%- endfor -%}

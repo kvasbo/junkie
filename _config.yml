@@ -15,11 +15,6 @@ map:
   # Alternativ: https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png
   tiles: https://tile.openstreetmap.org/{z}/{x}/{y}.png
 
-# Bilder: i produksjon (JEKYLL_ENV=production) skrives bilde-URL-er om til
-# Cloudflare Image Transformations (/cdn-cgi/image/...). Krever at
-# "Transformations" er skrudd på for sonen i Cloudflare-dashbordet.
-cloudflare_images: true
-
 # Standard OG-bilde for sider uten eget bilde
 default_image: /assets/img/og-default.png
 

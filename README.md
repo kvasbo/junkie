@@ -47,7 +47,7 @@ title: Kebab Huset
 categories: [kebab, pizza]     # slugs fra _data/kategorier.yml
 bydel: gronland                # slug fra _data/bydeler.yml (valgfri)
 address: Grønlandsleiret 1, 0190 Oslo
-lat: 59.9127
+lat: 59.9127                   # høyreklikk i Google Maps for å kopiere
 lng: 10.7617
 google_maps_url: https://maps.app.goo.gl/...
 opening_hours: ["mandag: 11:00–23:00", ...]
@@ -106,27 +106,12 @@ Intro i markdown.
 
 ## Bilder
 
-Legg originalbilder i repoet:
+Legg bilder i repoet og referer til dem fra front matter:
 
 - `assets/img/anmeldelser/<anmeldelse-filnavn>/1.jpg`, `2.jpg`, …
 - `assets/img/steder/<sted-slug>/…`
 
-Hold originalene fornuftige (maks ca. 2000 px bred, 1 MB) siden de ligger i git. I produksjon skrives alle bilde-URL-er om til Cloudflare Image Transformations (`/cdn-cgi/image/width=…/assets/img/…`) med `srcset` i flere bredder. Lokalt brukes originalen direkte.
-
-For at dette skal virke må **Transformations** være skrudd på for sonen `junkie.no` i Cloudflare-dashbordet (Images → Transformations → Enable for zone). Gratisnivået dekker 5 000 unike transformasjoner per måned. Uten det (eller på `*.pages.dev`) returnerer `/cdn-cgi/image/` ikke bilder – sett `cloudflare_images: false` i `_config.yml` for å bruke originalene.
-
-## Google Places
-
-`bin/sted` slår opp et sted i Google Places API (New) og skriver ut front matter med navn, adresse, koordinater, place-id, Maps-lenke og åpningstider:
-
-```sh
-export GOOGLE_PLACES_API_KEY=...    # eller legg nøkkelen i .env (ignorert av git)
-bin/sted "Syverkiosken"             # skriv ut front matter
-bin/sted "Syverkiosken" --alle      # vis alle treff
-bin/sted "Syverkiosken" --skriv     # skriv _steder/syverkiosken.md direkte
-```
-
-Nøkkelen må ha «Places API (New)» aktivert i Google Cloud-prosjektet.
+Bildene serveres som de er, uten resizing. Skaler dem ned selv før du sjekker inn (rundt 1600 px bred og under 500 kB er et greit mål), både for lastetid og fordi de ligger i git.
 
 ## Deploy til Cloudflare
 
@@ -153,7 +138,7 @@ Koble domenet `junkie.no` til Workeren under Settings → Domains & Routes.
 _config.yml          Nettstedsinnstillinger, samlinger, kart-senter
 _plugins/junkie.rb   Avledet data (score, anbefalt rett, ankere, feed) og genererte sider
 _layouts/            default, sted, liste, kategori, tag, bydel
-_includes/           Kort, stjerner, bilde, ikoner, JSON-LD
+_includes/           Kort, stjerner, ikoner, JSON-LD
 _sass/               Farger/tokens (lys + mørk), base, layout, komponenter, sider
 assets/js/kart.js    Leaflet-kart (alle steder, ett sted)
 assets/js/sok.js     Klientside-søk mot /sok.json
@@ -161,12 +146,11 @@ assets/vendor/       Leaflet 1.9.4 (selvhostet)
 assets/fonts/        Lilita One (OFL, selvhostet)
 _data/               kategorier, bydeler, nav, testes
 _templates/          Maler for sted, anmeldelse, liste
-bin/                 ny (lag filer fra mal), sted (Google Places-oppslag)
+bin/                 ny (lag filer fra mal)
 ```
 
 ## Sjekkliste før lansering
 
 - [ ] 20+ publiserte anmeldelser
-- [ ] Transformations skrudd på for sonen i Cloudflare
 - [ ] `junkie.no` koblet til Workeren i Cloudflare
 - [ ] Egen logo (dagens er en enkel SVG-ordmerke i `_includes/logo.svg`, favicon i `assets/img/favicon.svg`, OG-bilde i `assets/img/og-default.png`)

@@ -14,10 +14,10 @@ Valg tatt for den statiske utgaven:
 
 - [x] **Innhold:** Markdown-filer i git. Én fil per sted (`_steder/`), anmeldelse (`_anmeldelser/`) og kuratert liste (`_lister/`). Ingen CMS eller admin-UI – redigering skjer i editor eller på GitHub.
 - [x] **Utkast/publisert/arkivert:** `status`-felt i front matter. Utkast vises lokalt med merking, aldri i produksjon.
-- [x] **Bilder:** Originaler i repoet under `assets/img/`. Resizing via Cloudflare Image Transformations (`/cdn-cgi/image/…`) i produksjon; erstatter imgproxy + R2.
+- [x] **Bilder:** Originaler i repoet under `assets/img/`, servert som de er. Ingen resizing; skaler ned før innsjekk. Erstatter imgproxy + R2.
 - [x] **Søk:** Klientside-søk mot en JSON-indeks generert ved bygg (`/sok.json`). Erstatter FTS5.
 - [x] **Kart:** Leaflet (selvhostet) med OSM-fliser, data fra `/steder.json`.
-- [x] **Stedsdata:** Manuell front matter. `bin/sted` henter navn, adresse, koordinater og åpningstider fra Google Places API (New) og skriver ut front matter.
+- [x] **Stedsdata:** Manuell front matter (adresse, koordinater, åpningstider). Ingen Google Places-integrasjon.
 - [x] **Kategori-, tag- og bydelssider:** Genereres av en Jekyll-plugin (`_plugins/junkie.rb`) som også regner ut steds-score, anbefalt rett, ankerpunkter og feed.
 - [x] **Deploy:** Cloudflare Pages med git-integrasjon. `bundle exec jekyll build`, output `_site`, `JEKYLL_ENV=production`. Ingen Ruby-pin – byggemiljøets forhåndsinstallerte Ruby brukes.
 - [x] **Typografi:** Lilita One (OFL) selvhostet for overskrifter, system-sans for brødtekst.

@@ -15,7 +15,7 @@
   <a class="kort__lenke" href="{{ href | relative_url }}">
     <div class="kort__media">
       {%- if bilde -%}
-        {% include img.html src=bilde alt=bilde_alt width=800 class="kort__bilde" %}
+        {% include img.html src=bilde alt=bilde_alt class="kort__bilde" %}
       {%- else -%}
         <div class="kort__plakat" aria-hidden="true">{% include ikon.html slug=k0 %}</div>
       {%- endif -%}

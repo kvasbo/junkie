@@ -5,9 +5,8 @@ title: Dronningens Kebab
 categories: [kebab, pizza]         # Slugs fra _data/kategorier.yml (kebab, pizza, taco, polse, annet)
 bydel: gronland                    # Slug fra _data/bydeler.yml (valgfri, ukjent slug fungerer også)
 address: Grønlandsleiret 1, 0190 Oslo
-lat: 59.9127                       # Koordinater (bin/sted henter dem fra Google Places)
+lat: 59.9127                       # Koordinater (høyreklikk i Google Maps for å kopiere)
 lng: 10.7617
-google_place_id:                   # Valgfri
 google_maps_url:                   # Valgfri – lenke vises under adressen
 opening_hours:                     # Valgfri liste med tekstlinjer
   - "mandag: 11:00–23:00"
