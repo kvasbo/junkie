@@ -3,8 +3,8 @@
 # Anmeldelser peker på stedet med `venue: kebab-huset`.
 title: Dronningens Kebab
 categories: [kebab, pizza]         # Slugs fra _data/kategorier.yml (kebab, pizza, taco, polse, annet)
-bydel: gronland                    # Slug fra _data/bydeler.yml (valgfri, ukjent slug fungerer også)
-address: Grønlandsleiret 1, 0190 Oslo
+bydel: sentrum                     # Slug fra _data/bydeler.yml (valgfri, ukjent slug fungerer også)
+address: Skippergata 32, 0154 Oslo
 lat: 59.9111                       # Koordinater (høyreklikk i Google Maps for å kopiere)
 lng: 10.7458
 google_maps_url: https://maps.app.goo.gl/mVZxteGijQeaTHms7               # Valgfri – lenke vises under adressen
