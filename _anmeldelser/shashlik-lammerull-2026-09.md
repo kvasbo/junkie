@@ -7,7 +7,7 @@ score: 3                           # 0–3 stjerner
 visited: 2026-04
 date: 2026-04-09
 status: published                      # draft | published | archived
-tags: [kebab, hjemmelaget pita]
+tags: [shawarma, hjemmelaget pita, rent kjøtt]
 images:                            # Valgfri. Legg filene i assets/img/anmeldelser/<sted>-<rett>-<YYYY-MM>/
   - src: /assets/img/anmeldelser/shashlik-202604.jpg
     alt: Lammerull-tallerken
