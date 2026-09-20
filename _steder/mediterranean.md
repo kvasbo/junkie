@@ -13,4 +13,4 @@ score_override:                    # Tom = automatisk (høyeste rett-score). 0�
 status: open                       # open | closed
 closed_at:                         # YYYY-MM når stedet la ned (kun ved status: closed)
 ---
-Dette pleide å være en klassiker i Kirkeristen, nå en voksende kjede av steder. Anmelder alle under ett.
+Godt gammelt sted i Torggata. En klassiker.
