@@ -31,7 +31,7 @@
       </p>
       {%- if r -%}
       <p class="kort__rett">
-        <span class="kort__rett-navn">{% if include.review %}{{ r.title }}{% else %}Anbefalt: {{ r.title }}{% endif %}</span>
+        <span class="kort__rett-navn">{% if include.review %}{{ r.title }}{% else %}Anmeldt: {{ r.title }}{% endif %}</span>
         {% include stjerner.html score=r.score str="liten" %}
         {%- if include.archived %} <span class="merke merke--arkivert">Arkivert</span>{% endif -%}
       </p>

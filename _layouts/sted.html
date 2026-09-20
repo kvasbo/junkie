@@ -27,11 +27,14 @@ layout: default
   </section>
   {%- endif -%}
 
-  {%- if v.featured_review -%}
+  {%- if v.dishes.size > 0 -%}
   <aside class="sted__anbefalt">
-    <p class="sted__anbefalt-etikett">Anbefalt rett</p>
-    <a class="sted__anbefalt-lenke" href="#{{ v.featured_review.anchor }}">{{ v.featured_review.title }}</a>
-    {% include stjerner.html score=v.featured_review.score %}
+    <p class="sted__anbefalt-etikett">Anmeldt</p>
+    <ul class="sted__anmeldt-liste">
+      {%- for d in v.dishes -%}
+      <li><a class="sted__anbefalt-lenke" href="#{{ d.latest.anchor }}">{{ d.title }}</a> {% include stjerner.html score=d.score str="liten" %}</li>
+      {%- endfor -%}
+    </ul>
   </aside>
   {%- endif -%}
 

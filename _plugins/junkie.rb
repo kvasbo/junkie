@@ -5,7 +5,7 @@
 # Kjøres etter at Jekyll har lest alle filer (post_read) og gjør følgende:
 #   * Kobler anmeldelser (_anmeldelser) til steder (_steder) via `venue`.
 #   * Regner ut steds-score (høyeste rett-score, evt. score_override),
-#     anbefalt rett, retter med revisit-tidslinje og tags.
+#     beste rett, retter med revisit-tidslinje og tags.
 #   * Lager ankerpunkt for hver anmeldelse: <rett-slug>-<YYYY-MM>.
 #   * Skjuler steder uten publiserte anmeldelser (i produksjon).
 #   * Løser opp kuraterte lister (referanser til anmeldelsesfiler).

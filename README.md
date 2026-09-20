@@ -58,7 +58,7 @@ closed_at: 2026-05             # ved status: closed
 Redaksjonell kommentar i markdown (valgfri).
 ```
 
-Et sted vises bare når det har minst én publisert anmeldelse. Steds-score er automatisk høyeste rett-score, med mindre `score_override` er satt. Anbefalt rett er retten med høyest score.
+Et sted vises bare når det har minst én publisert anmeldelse. Steds-score er automatisk høyeste rett-score, med mindre `score_override` er satt. Boksen «Anmeldt» på steds-siden lister alle anmeldte retter; på kort vises retten med høyest score.
 
 ### Anmeldelse
 
@@ -135,7 +135,7 @@ Koble domenet `junkie.no` til Workeren under Settings → Domains & Routes.
 
 ```
 _config.yml          Nettstedsinnstillinger, samlinger, kart-senter
-_plugins/junkie.rb   Avledet data (score, anbefalt rett, ankere, feed) og genererte sider
+_plugins/junkie.rb   Avledet data (score, anmeldte retter, ankere, feed) og genererte sider
 _layouts/            default, sted, liste, kategori, tag, bydel
 _includes/           Kort, stjerner, ikoner, JSON-LD
 _sass/               Farger/tokens (lys + mørk), base, layout, komponenter, sider

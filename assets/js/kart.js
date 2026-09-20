@@ -54,7 +54,7 @@
         var html = '<h3><a href="' + esc(s.u) + '">' + esc(s.n) + '</a></h3>' +
           '<div>' + STJERNER[s.s] + (s.c === 1 ? ' · <s>Nedlagt</s>' : '') + '</div>' +
           '<div>' + esc(s.k) + (s.b ? ' · ' + esc(s.b) : '') + '</div>' +
-          (s.r ? '<div>Anbefalt: <strong>' + esc(s.r) + '</strong></div>' : '');
+          (s.r ? '<div>Anmeldt: <strong>' + esc(s.r) + '</strong></div>' : '');
         m.bindPopup(html);
         bounds.push([s.lat, s.lng]);
       });
