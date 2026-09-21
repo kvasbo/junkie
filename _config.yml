@@ -45,13 +45,13 @@ defaults:
       path: ""
       type: anmeldelser
     values:
-      status: draft
+      status: published
   - scope:
       path: ""
       type: lister
     values:
       layout: liste
-      status: draft
+      status: published
       seo:
         type: WebPage
   - scope:

@@ -190,7 +190,8 @@ if ja?("\nLage første anmeldelse nå?", default: true)
   end
   visited = ask("Besøkt (YYYY-MM)", Date.today.strftime("%Y-%m"))
   tags = ask("Tags, kommaseparert", categories.first).split(",").map(&:strip).reject(&:empty?)
-  publiser = ja?("Publiser med en gang (ellers utkast)?", default: false)
+  utkast = ja?("Lagre som utkast (ikke publiser ennå)?", default: false)
+  publiser = !utkast
   body = ask_multiline("Anmeldelsen (markdown, 2–5 setninger)")
 
   key = "#{slug}-#{slugify(rett)}-#{visited}"

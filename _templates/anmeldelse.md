@@ -6,7 +6,7 @@ title: Kebab stor m/hvitløk        # Rettens navn (påkrevd)
 score: 3                           # 0–3 stjerner
 visited: 2026-03                   # Besøkt, måned + år
 date: 2026-03-15                   # Publiseringsdato (styrer rekkefølgen i feeden)
-status: draft                      # draft | published | archived
+status: published                  # published | draft | archived
 tags: [kebab, hjemmelaget pita, halal, sen-natt]
 images:                            # Valgfri. Legg filene i assets/img/anmeldelser/<sted>-<rett>-<YYYY-MM>/
   - src: /assets/img/anmeldelser/kebab-huset-kebab-stor-2026-03/1.jpg

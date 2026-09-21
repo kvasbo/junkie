@@ -187,7 +187,7 @@ Jekyll::Hooks.register :site, :post_read do |site|
   # --- anmeldelser -------------------------------------------------------
   reviews.each do |r|
     r.data["key"]     = r.basename_without_ext
-    r.data["status"]  = (r.data["status"] || "draft").to_s
+    r.data["status"]  = (r.data["status"] || "published").to_s
     unless %w[draft published archived].include?(r.data["status"])
       problems[:errors] << "#{r.relative_path}: ukjent status '#{r.data['status']}' (draft | published | archived)"
     end
@@ -327,13 +327,16 @@ Jekyll::Hooks.register :site, :post_read do |site|
 
   # Skjul steder uten publiserte anmeldelser
   hidden = venues.reject { |v| v.data["visible"] }
+  reviews.select { |r| r.data["status"] == "draft" }.each do |r|
+    Jekyll.logger.info "Junkie info:", "#{r.relative_path} er utkast (status: draft) – sett status: published når den er klar"
+  end
   hidden.each { |v| Jekyll.logger.info "Junkie info:", "#{v.relative_path} har ingen publisert anmeldelse og vises ikke#{show_drafts ? "" : " (utkast teller ikke i produksjon)"}" }
   site.collections["steder"].docs.reject! { |v| !v.data["visible"] } if site.collections["steder"]
   visible_venues = site.collections["steder"]&.docs || []
 
   # --- kuraterte lister --------------------------------------------------
   lists.each do |l|
-    l.data["status"] = (l.data["status"] || "draft").to_s
+    l.data["status"] = (l.data["status"] || "published").to_s
     l.data["public"] = l.data["status"] == "published" || (show_drafts && l.data["status"] == "draft")
     l.data["draft"] = l.data["status"] == "draft"
     l.data["intro"] = l.content.to_s.strip

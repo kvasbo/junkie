@@ -13,7 +13,7 @@ bundle install
 bundle exec jekyll serve --livereload
 ```
 
-Siden kjører på <http://localhost:4000>. Lokalt vises utkast (`status: draft`) med tydelig merking, slik at du kan se anmeldelsen mens du skriver. I produksjon (`JEKYLL_ENV=production`) er utkast skjult.
+Siden kjører på <http://localhost:4000>. Anmeldelser er publisert med mindre du setter `status: draft`. Utkast vises lokalt med tydelig merking, slik at du kan se anmeldelsen mens du skriver, men er skjult i produksjon (`JEKYLL_ENV=production`). `bin/sjekk` minner deg på utkast som ligger og venter.
 
 Produksjonsbygg lokalt:
 
@@ -92,7 +92,7 @@ title: Kebab stor m/hvitløk    # rettens navn
 score: 3                       # 0–3
 visited: 2026-03               # måned + år
 date: 2026-03-15               # publiseringsdato, styrer feed-rekkefølge
-status: published              # draft | published | archived
+status: published              # published (standard) | draft | archived
 tags: [kebab, hjemmelaget pita, halal]
 images:
   - src: /assets/img/anmeldelser/kebab-huset-kebab-stor-2026-03/1.jpg
