@@ -75,6 +75,7 @@ include:
 
 exclude:
   - wrangler.jsonc
+  - assets/fonts/README.md
   - Gemfile
   - Gemfile.lock
   - README.md

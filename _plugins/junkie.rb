@@ -356,3 +356,201 @@ module Junkie
     end
   end
 end
+
+# ---------------------------------------------------------------------------
+# Markdown for maskiner: /steder/:slug.md, /tag/:slug.md, /bydel/:slug.md,
+# /lister/:slug.md, /om.md, /llms.txt og /llms-full.txt
+# ---------------------------------------------------------------------------
+module Junkie
+  STARS = { 0 => "☆☆☆", 1 => "★☆☆", 2 => "★★☆", 3 => "★★★" }.freeze
+
+  # Rå tekstfil som ikke går gjennom markdown-konvertering eller Liquid.
+  class RawPage < Jekyll::PageWithoutAFile
+    def initialize(site, permalink, content, extra = {})
+      super(site, site.source, "", "raw.txt")
+      @content = content
+      @data = { "permalink" => permalink, "layout" => nil, "sitemap" => false }.merge(extra)
+    end
+
+    def render_with_liquid?
+      false
+    end
+  end
+
+  module Markdown
+    module_function
+
+    def abs(site, path)
+      "#{site.config['url']}#{site.config['baseurl']}#{path}"
+    end
+
+    def score_line(score)
+      "#{STARS[score]} #{score}/3 – #{SCORE_LABELS[score]}"
+    end
+
+    def venue(site, v)
+      d = v.data
+      out = +"# #{d['title']}\n\n"
+      out << "- Score: #{score_line(d['score'])}\n"
+      out << "- Kategorier: #{d['category_data'].map { |k| k['name'] }.join(', ')}\n" unless d["category_data"].empty?
+      out << "- Bydel: #{d['bydel_label']}\n" unless d["bydel_label"].to_s.empty?
+      d["locations"].each do |l|
+        next if l["address"].to_s.empty? && l["name"].to_s.empty?
+        label = l["name"].to_s.empty? ? "Adresse" : "Adresse (#{l['name']})"
+        line = "- #{label}: #{l['address']}"
+        line << " – nedlagt#{l['closed_label'].to_s.empty? ? '' : " #{l['closed_label']}"}" if l["closed"] && !d["closed"]
+        line << " – [Google Maps](#{l['google_maps_url']})" if l["google_maps_url"]
+        out << line << "\n"
+      end
+      out << "- Status: Nedlagt#{d['closed_label'].to_s.empty? ? '' : " (#{d['closed_label']})"}\n" if d["closed"]
+      out << "- Nettside: #{abs(site, v.url)}\n"
+      out << "\n#{d['summary']}\n" unless d["summary"].to_s.empty?
+      out << "\n## Anmeldte retter\n"
+      d["dishes"].each do |dish|
+        dish["reviews"].each_with_index do |r, i|
+          rd = r.data
+          if i.zero?
+            out << "\n### #{dish['title']} – #{STARS[rd['score']]} #{rd['score']}/3\n\n"
+          else
+            out << "\n#### Tidligere besøk: #{rd['visited_label']} – #{STARS[rd['score']]} #{rd['score']}/3\n\n"
+          end
+          meta = ["Besøkt #{rd['visited_label']}"]
+          meta << "Tags: #{rd['tags'].join(', ')}" unless rd["tags"].empty?
+          out << "*#{meta.join('. ')}.*\n\n"
+          out << r.content.to_s.strip << "\n"
+        end
+      end
+      out
+    end
+
+    def list(site, l)
+      d = l.data
+      out = +"# #{d['title']}\n\n"
+      out << "#{d['intro']}\n\n" unless d["intro"].to_s.empty?
+      out << "- Nettside: #{abs(site, l.url)}\n\n"
+      d["items"].each_with_index do |item, i|
+        v = item["venue"]; r = item["review"]
+        out << "#{i + 1}. **#{v.data['title']}** – #{r.data['title']} #{STARS[r.data['score']]}"
+        out << " (arkivert anmeldelse)" if item["archived"]
+        out << "\n   #{item['note']}" unless item["note"].to_s.empty?
+        out << "\n   #{r.data['excerpt']}\n   Mer: #{abs(site, "#{v.url.chomp('/')}.md")}\n"
+      end
+      out
+    end
+
+    def venue_row(site, v)
+      d = v.data
+      fr = d["featured_review"]
+      s = "- [#{d['title']}](#{abs(site, "#{v.url.chomp('/')}.md")}): #{STARS[d['score']]}"
+      s << ", #{d['category_data'].map { |k| k['name'] }.join('/')}" unless d["category_data"].empty?
+      s << ", #{d['bydel_label']}" unless d["bydel_label"].to_s.empty?
+      s << ", nedlagt" if d["closed"]
+      s << ". Anmeldt: #{fr.data['title']}" if fr
+      s << "\n"
+    end
+
+    def tag(site, t)
+      out = +"# ##{t['name']}\n\nRetter tagget «#{t['name']}» hos Junkie.\n\n"
+      t["reviews"].sort_by { |r| -r.data["score"] }.each do |r|
+        v = r.data["venue_doc"]
+        out << "- **#{v.data['title']}** – #{r.data['title']} #{STARS[r.data['score']]}: #{r.data['excerpt']} ([mer](#{abs(site, "#{v.url.chomp('/')}.md")}))\n"
+      end
+      out
+    end
+
+    def bydel(site, b)
+      out = +"# #{b['name']}\n\nGatemat i #{b['name']} anmeldt av Junkie.\n\n"
+      b["venues"].sort_by { |v| -v.data["score"] }.each { |v| out << venue_row(site, v) }
+      out
+    end
+
+    def intro_text(site)
+      path = File.join(site.source, "_includes", "forside-intro.md")
+      File.exist?(path) ? File.read(path, encoding: "UTF-8").strip : site.config["description"].to_s
+    end
+
+    def scale_text
+      <<~MD
+        ## Skalaen
+
+        Junkie anmelder enkeltretter, ikke steder. Hver rett får 0–3 stjerner:
+
+        - ★★★ 3/3 – Eksepsjonell. Dette MÅ du prøve.
+        - ★★☆ 2/3 – Veldig god. Definitivt verdt en tur.
+        - ★☆☆ 1/3 – God. Verdt et besøk.
+        - ☆☆☆ 0/3 – Anmeldt, men ikke anbefalt.
+
+        Et sted får automatisk scoren til sin beste rett. Samme rett kan anmeldes på nytt senere; alle besøk står oppført. Ingen betalte omtaler.
+      MD
+    end
+
+    def om(site)
+      "# Om Junkie\n\n#{intro_text(site)}\n\n#{scale_text}"
+    end
+
+    def llms(site, j)
+      out = +"# #{site.config['title']}\n\n> #{site.config['description']}\n\n"
+      out << "#{intro_text(site)}\n\n"
+      out << scale_text << "\n"
+      out << "Alle sider finnes som markdown: bytt ut avsluttende `/` med `.md`. Hele guiden i én fil: #{abs(site, '/llms-full.txt')}\n\n"
+      out << "## Steder\n\n"
+      j["venues"].each { |v| out << venue_row(site, v) }
+      lists = site.collections["lister"]&.docs || []
+      unless lists.empty?
+        out << "\n## Lister\n\n"
+        lists.each { |l| out << "- [#{l.data['title']}](#{abs(site, "#{l.url.chomp('/')}.md")}): #{l.data['description']}\n" }
+      end
+      unless j["bydeler"].empty?
+        out << "\n## Bydeler\n\n"
+        j["bydeler"].each { |b| out << "- [#{b['name']}](#{abs(site, "/bydel/#{b['slug']}.md")}): #{b['count']} #{b['count'] == 1 ? 'sted' : 'steder'}\n" }
+      end
+      unless j["tags"].empty?
+        out << "\n## Tags\n\n"
+        j["tags"].each { |t| out << "- [##{t['name']}](#{abs(site, "/tag/#{t['slug']}.md")}): #{t['reviews'].size} #{t['reviews'].size == 1 ? 'rett' : 'retter'}\n" }
+      end
+      out << "\n## Om\n\n- [Om Junkie](#{abs(site, '/om.md')})\n"
+      out
+    end
+
+    def llms_full(site, j)
+      out = +"# #{site.config['title']} – hele guiden\n\n> #{site.config['description']}\n\n"
+      out << "#{intro_text(site)}\n\n" << scale_text << "\n---\n\n"
+      j["venues"].each { |v| out << venue(site, v) << "\n---\n\n" }
+      (site.collections["lister"]&.docs || []).each { |l| out << list(site, l) << "\n---\n\n" }
+      out
+    end
+  end
+
+  class MarkdownGenerator < Jekyll::Generator
+    safe true
+    priority :lowest
+
+    def generate(site)
+      j = site.data["junkie"] or return
+      add = ->(permalink, content) { site.pages << RawPage.new(site, permalink, content) }
+
+      (site.collections["steder"]&.docs || []).each do |v|
+        v.data["md_url"] = "#{v.url.chomp('/')}.md"
+        add.call(v.data["md_url"], Markdown.venue(site, v))
+      end
+      (site.collections["lister"]&.docs || []).each do |l|
+        l.data["md_url"] = "#{l.url.chomp('/')}.md"
+        add.call(l.data["md_url"], Markdown.list(site, l))
+      end
+      j["tags"].each do |t|
+        add.call("/tag/#{t['slug']}.md", Markdown.tag(site, t))
+      end
+      j["bydeler"].each do |b|
+        add.call("/bydel/#{b['slug']}.md", Markdown.bydel(site, b))
+      end
+      site.pages.each do |p|
+        next unless p.data["term"]
+        p.data["md_url"] = "#{p.url.chomp('/')}.md" if p.url.start_with?("/tag/", "/bydel/")
+      end
+      site.pages.find { |p| p.url == "/om/" }&.data&.[]=("md_url", "/om.md")
+      add.call("/om.md", Markdown.om(site))
+      add.call("/llms.txt", Markdown.llms(site, j))
+      add.call("/llms-full.txt", Markdown.llms_full(site, j))
+    end
+  end
+end

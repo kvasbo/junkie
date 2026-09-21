@@ -135,6 +135,17 @@ Legg bilder i repoet og referer til dem fra front matter:
 
 Bildene serveres som de er, uten resizing. Skaler dem ned selv før du sjekker inn (rundt 1600 px bred og under 500 kB er et greit mål), både for lastetid og fordi de ligger i git.
 
+## Markdown for maskiner
+
+Alt innhold finnes også som ren markdown, generert ved bygg:
+
+- Hver steds-, tag-, bydels- og listeside har en tvilling der avsluttende `/` er byttet ut med `.md`, f.eks. `/steder/sultan.md`. HTML-sidene peker på den med `<link rel="alternate" type="text/markdown">`.
+- `/llms.txt` er en indeks med intro, skala og lenker til alle markdown-sidene (konvensjonen fra llmstxt.org).
+- `/llms-full.txt` er hele guiden i én fil.
+- `/om.md` er om-siden.
+
+`robots.txt` tillater eksplisitt de vanlige KI-crawlerne. Sjekk at Cloudflare ikke blokkerer dem for sonen (Security → Bots → AI bots).
+
 ## Deploy til Cloudflare
 
 Siden bygges av Cloudflare Workers Builds via git-integrasjon (Workers & Pages → Create → Workers → Import a repository). Innstillinger:
