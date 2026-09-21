@@ -58,6 +58,23 @@ closed_at: 2026-05             # ved status: closed
 Redaksjonell kommentar i markdown (valgfri).
 ```
 
+Et sted med flere lokasjoner (kjeder) bruker `locations:` i stedet for `address`/`lat`/`lng`/`bydel`. Alle lokasjonene deler anmeldelser, score og URL, vises som egne nåler på kartet og gjør at stedet dukker opp i alle bydelene sine:
+
+```yaml
+locations:
+  - name: Kirkeristen
+    address: Kirkeristen 3, 0153 Oslo
+    lat: 59.9124
+    lng: 10.7460
+    bydel: sentrum
+    status: closed               # valgfri, per lokasjon
+  - name: Grønland
+    address: Grønlandsleiret 15, 0190 Oslo
+    lat: 59.9127
+    lng: 10.7617
+    bydel: gronland
+```
+
 Et sted vises bare når det har minst én publisert anmeldelse. Steds-score er automatisk høyeste rett-score, med mindre `score_override` er satt. Boksen «Anmeldt» på steds-siden lister alle anmeldte retter; på kort vises retten med høyest score.
 
 ### Anmeldelse

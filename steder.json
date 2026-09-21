@@ -6,8 +6,10 @@ sitemap: false
 {%- assign j = site.data.junkie -%}
 [
 {%- for v in j.venues -%}
-  {%- if v.has_coords -%}
-  {"n":{{ v.title | jsonify }},"u":{{ v.url | jsonify }},"lat":{{ v.lat }},"lng":{{ v.lng }},"s":{{ v.score }},"k":{{ v.category_data | map: "name" | join: ", " | jsonify }},"b":{{ v.bydel_data.name | default: "" | jsonify }},"r":{{ v.featured_review.title | default: "" | jsonify }},"c":{% if v.closed %}1{% else %}0{% endif %}},
+  {%- for l in v.locations -%}
+  {%- if l.has_coords -%}
+  {"n":{{ v.title | jsonify }},"l":{{ l.name | jsonify }},"u":{{ v.url | jsonify }},"lat":{{ l.lat }},"lng":{{ l.lng }},"s":{{ v.score }},"k":{{ v.category_data | map: "name" | join: ", " | jsonify }},"b":{{ l.bydel_data.name | default: "" | jsonify }},"r":{{ v.featured_review.title | default: "" | jsonify }},"c":{% if l.closed %}1{% else %}0{% endif %}},
   {%- endif -%}
+  {%- endfor -%}
 {%- endfor -%}
 null]

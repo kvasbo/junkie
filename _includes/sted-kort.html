@@ -27,7 +27,7 @@
       <h3 class="kort__tittel">{% if include.nummer %}<span class="sr-only">{{ include.nummer }}. </span>{% endif %}{{ v.title }}</h3>
       <p class="kort__sted">
         {%- for k in v.category_data %}{{ k.name }}{% unless forloop.last %}, {% endunless %}{% endfor -%}
-        {%- if v.bydel_data %} <span class="kort__bydel">· {{ v.bydel_data.name }}</span>{% endif -%}
+        {%- if v.bydel_label != "" %} <span class="kort__bydel">· {{ v.bydel_label }}</span>{% endif -%}
       </p>
       {%- if r -%}
       <p class="kort__rett">

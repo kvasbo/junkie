@@ -31,13 +31,18 @@
     });
   }
 
-  // Ett sted (steds-siden)
-  if (el.dataset.lat && el.dataset.lng) {
-    var lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng);
-    map.setView([lat, lng], 16);
-    marker(lat, lng, parseInt(el.dataset.score || '0', 10), false)
-      .addTo(map)
-      .bindPopup('<h3>' + esc(el.dataset.navn) + '</h3>');
+  // Ett sted (steds-siden): én eller flere lokasjoner i data-points
+  if (el.dataset.points) {
+    var pts = [];
+    try { pts = JSON.parse(el.dataset.points); } catch (e) { pts = []; }
+    var score = parseInt(el.dataset.score || '0', 10), b = [];
+    pts.forEach(function (p) {
+      marker(p.lat, p.lng, score, !!p.closed).addTo(map)
+        .bindPopup('<h3>' + esc(el.dataset.navn) + (p.name ? ' · ' + esc(p.name) : '') + '</h3>' + (p.closed ? '<div><s>Nedlagt</s></div>' : ''));
+      b.push([p.lat, p.lng]);
+    });
+    if (b.length > 1) map.fitBounds(b, { padding: [30, 30], maxZoom: 15 });
+    else if (b.length === 1) map.setView(b[0], 16);
     return;
   }
 
@@ -51,7 +56,7 @@
       var bounds = [];
       data.filter(Boolean).forEach(function (s) {
         var m = marker(s.lat, s.lng, s.s, s.c === 1).addTo(map);
-        var html = '<h3><a href="' + esc(s.u) + '">' + esc(s.n) + '</a></h3>' +
+        var html = '<h3><a href="' + esc(s.u) + '">' + esc(s.n) + (s.l ? ' · ' + esc(s.l) : '') + '</a></h3>' +
           '<div>' + STJERNER[s.s] + (s.c === 1 ? ' · <s>Nedlagt</s>' : '') + '</div>' +
           '<div>' + esc(s.k) + (s.b ? ' · ' + esc(s.b) : '') + '</div>' +
           (s.r ? '<div>Anmeldt: <strong>' + esc(s.r) + '</strong></div>' : '');

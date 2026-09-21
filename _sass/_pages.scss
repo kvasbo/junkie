@@ -42,6 +42,8 @@
   &__rad { margin-bottom: 12px; }
   dt { font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--demp); }
   dd { margin: 2px 0 0; }
+  &__bydel { font-weight: 400; text-transform: none; letter-spacing: 0; }
+  &__rad--nedlagt dd { color: var(--demp); }
 }
 
 .rett {

@@ -152,11 +152,43 @@ Jekyll::Hooks.register :site, :post_read do |site|
     v.data["closed_label"] = Junkie.month_label(Junkie.month_key(v.data["closed_at"]))
     v.data["categories"] = Array(v.data["categories"]).map { |c| Junkie.slugify(c) }
     v.data["category_data"] = v.data["categories"].map { |c| kategorier[c] || { "slug" => c, "name" => c.capitalize } }
-    bslug = v.data["bydel"].to_s.empty? ? nil : Junkie.slugify(v.data["bydel"])
-    v.data["bydel_slug"] = bslug
-    v.data["bydel_data"] = bslug && (bydeler[bslug] || { "slug" => bslug, "name" => v.data["bydel"].to_s })
     v.data["summary"] = v.content.to_s.strip
-    v.data["has_coords"] = !v.data["lat"].nil? && !v.data["lng"].nil?
+
+    # Lokasjoner: `locations:` i front matter, ellers én lokasjon fra stedets egne felter
+    locs = Array(v.data["locations"]).select { |l| l.is_a?(Hash) }
+    if locs.empty?
+      locs = [{ "address" => v.data["address"], "lat" => v.data["lat"], "lng" => v.data["lng"],
+                "google_maps_url" => v.data["google_maps_url"], "bydel" => v.data["bydel"], "status" => v.data["status"] }]
+    end
+    locs = locs.map do |l|
+      l = l.dup
+      l["name"] = l["name"].to_s.strip
+      bs = l["bydel"].to_s.empty? ? nil : Junkie.slugify(l["bydel"])
+      l["bydel_slug"] = bs
+      l["bydel_data"] = bs && (bydeler[bs] || { "slug" => bs, "name" => l["bydel"].to_s })
+      l["has_coords"] = !l["lat"].nil? && !l["lng"].nil?
+      l["closed"] = l["status"].to_s == "closed" || v.data["closed"]
+      l["closed_label"] = Junkie.month_label(Junkie.month_key(l["closed_at"]))
+      l
+    end
+    v.data["locations"] = locs
+    v.data["multi"] = locs.size > 1
+    v.data["has_coords"] = locs.any? { |l| l["has_coords"] }
+    v.data["open_locations"] = locs.reject { |l| l["closed"] }
+    # Alle lokasjoner nedlagt = stedet nedlagt
+    v.data["closed"] = true if v.data["open_locations"].empty? && !locs.empty?
+    first = locs.first
+    v.data["address"] ||= first["address"]
+    v.data["lat"] ||= first["lat"]
+    v.data["lng"] ||= first["lng"]
+    v.data["bydel_list"] = locs.map { |l| l["bydel_data"] }.compact.uniq { |b| b["slug"] }
+    v.data["bydel_slugs"] = v.data["bydel_list"].map { |b| b["slug"] }
+    v.data["bydel_slug"] = v.data["bydel_slugs"].first
+    v.data["bydel_data"] = v.data["bydel_list"].first
+    v.data["bydel_label"] = v.data["bydel_list"].map { |b| b["name"] }.join(", ")
+    v.data["map_points"] = locs.select { |l| l["has_coords"] }.map do |l|
+      { "lat" => l["lat"], "lng" => l["lng"], "name" => l["name"], "closed" => l["closed"] }
+    end
 
     pub = reviews.select { |r| r.data["venue_doc"].equal?(v) && r.data["public"] }
     pub = pub.sort_by { |r| [r.data["visited"].to_s, r.data["date"].to_s] }.reverse
@@ -263,10 +295,10 @@ Jekyll::Hooks.register :site, :post_read do |site|
     k
   end
 
-  used_bydeler = visible_venues.map { |v| v.data["bydel_data"] }.compact.uniq { |b| b["slug"] }
+  used_bydeler = visible_venues.flat_map { |v| v.data["bydel_list"] }.uniq { |b| b["slug"] }
   bydel_list = used_bydeler.map do |b|
     b = b.dup
-    b["venues"] = visible_venues.select { |v| v.data["bydel_slug"] == b["slug"] }
+    b["venues"] = visible_venues.select { |v| v.data["bydel_slugs"].include?(b["slug"]) }
     b["count"] = b["venues"].size
     b
   end.sort_by { |b| b["name"].to_s }

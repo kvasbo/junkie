@@ -19,7 +19,7 @@
     </div>
     <div class="kort__tekst">
       <h3 class="kort__tittel">{{ r.title }}</h3>
-      <p class="kort__sted">{{ v.title }}{% if v.bydel_data %} <span class="kort__bydel">· {{ v.bydel_data.name }}</span>{% endif %}</p>
+      <p class="kort__sted">{{ v.title }}{% if v.bydel_label != "" %} <span class="kort__bydel">· {{ v.bydel_label }}</span>{% endif %}</p>
       <p class="kort__utdrag">{{ r.excerpt }}</p>
       <p class="kort__meta"><time datetime="{{ r.visited }}">Besøkt {{ r.visited_label }}</time></p>
     </div>

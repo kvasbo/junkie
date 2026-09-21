@@ -6,10 +6,10 @@ sitemap: false
 {%- assign j = site.data.junkie -%}
 [
 {%- for v in j.venues -%}
-  {"t":"sted","n":{{ v.title | jsonify }},"u":{{ v.url | jsonify }},"s":{{ v.score }},"b":{{ v.bydel_data.name | default: "" | jsonify }},"k":{{ v.category_data | map: "name" | join: ", " | jsonify }},"x":{{ v.tags | join: " " | jsonify }},"c":{% if v.closed %}1{% else %}0{% endif %}},
+  {"t":"sted","n":{{ v.title | jsonify }},"u":{{ v.url | jsonify }},"s":{{ v.score }},"b":{{ v.bydel_label | jsonify }},"k":{{ v.category_data | map: "name" | join: ", " | jsonify }},"x":{{ v.tags | join: " " | jsonify }},"c":{% if v.closed %}1{% else %}0{% endif %}},
 {%- endfor -%}
 {%- for r in j.reviews -%}
-  {"t":"rett","n":{{ r.title | jsonify }},"v":{{ r.venue_title | jsonify }},"u":{{ r.lenke | jsonify }},"s":{{ r.score }},"b":{{ r.venue_doc.bydel_data.name | default: "" | jsonify }},"x":{{ r.tags | join: " " | jsonify }},"e":{{ r.excerpt | truncate: 120 | jsonify }}},
+  {"t":"rett","n":{{ r.title | jsonify }},"v":{{ r.venue_title | jsonify }},"u":{{ r.lenke | jsonify }},"s":{{ r.score }},"b":{{ r.venue_doc.bydel_label | jsonify }},"x":{{ r.tags | join: " " | jsonify }},"e":{{ r.excerpt | truncate: 120 | jsonify }}},
 {%- endfor -%}
 {%- for t in j.tags -%}
   {"t":"tag","n":{{ t.name | jsonify }},"u":"/tag/{{ t.slug }}/","a":{{ t.reviews.size }}}{% unless forloop.last %},{% endunless %}

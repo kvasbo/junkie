@@ -5,7 +5,7 @@ layout: default
 {% include jsonld-sted.html %}
 <article class="sted sted--score-{{ v.score }}">
   <header class="sted__topp">
-    <p class="brodsmuler"><a href="{{ '/steder/' | relative_url }}">Steder</a>{% if v.bydel_data %} / <a href="{{ '/bydel/' | append: v.bydel_slug | append: '/' | relative_url }}">{{ v.bydel_data.name }}</a>{% endif %}</p>
+    <p class="brodsmuler"><a href="{{ '/steder/' | relative_url }}">Steder</a>{% for b in v.bydel_list %} / <a href="{{ '/bydel/' | append: b.slug | append: '/' | relative_url }}">{{ b.name }}</a>{% endfor %}</p>
     <h1 class="sted__navn">{{ v.title }}</h1>
     <div class="sted__score">
       {% include stjerner.html score=v.score str="hero" %}
@@ -40,16 +40,18 @@ layout: default
 
   <section class="sted__info">
     <h2 class="sr-only">Praktisk info</h2>
-    <dl class="info">
-      {%- if v.address -%}
-      <div class="info__rad">
-        <dt>Adresse</dt>
-        <dd>{{ v.address }}{% if v.google_maps_url %} · <a href="{{ v.google_maps_url }}" rel="noopener">Google Maps</a>{% endif %}</dd>
+    <dl class="info{% if v.multi %} info--flere{% endif %}">
+      {%- for l in v.locations -%}
+      {%- if l.address or l.name != "" -%}
+      <div class="info__rad{% if l.closed %} info__rad--nedlagt{% endif %}">
+        <dt>{% if l.name != "" %}{{ l.name }}{% else %}Adresse{% endif %}{% if l.bydel_data and v.multi %} <span class="info__bydel">· {{ l.bydel_data.name }}</span>{% endif %}</dt>
+        <dd>{{ l.address }}{% if l.google_maps_url %} · <a href="{{ l.google_maps_url }}" rel="noopener">Google Maps</a>{% endif %}{% if l.closed and v.closed == false %} <span class="merke merke--arkivert">Nedlagt{% if l.closed_label != "" %} {{ l.closed_label }}{% endif %}</span>{% endif %}</dd>
       </div>
       {%- endif -%}
+      {%- endfor -%}
     </dl>
     {%- if v.has_coords -%}
-    <div class="kart kart--liten" id="kart" data-lat="{{ v.lat }}" data-lng="{{ v.lng }}" data-score="{{ v.score }}" data-navn="{{ v.title | escape }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart som viser {{ v.title }}" role="img"></div>
+    <div class="kart kart--liten" id="kart" data-points='{{ v.map_points | jsonify | replace: "'", "&#39;" }}' data-score="{{ v.score }}" data-navn="{{ v.title | escape }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart som viser {{ v.title }}" role="img"></div>
     {%- endif -%}
   </section>
 
