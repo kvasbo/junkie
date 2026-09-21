@@ -327,7 +327,7 @@ Jekyll::Hooks.register :site, :post_read do |site|
 
   # Skjul steder uten publiserte anmeldelser
   hidden = venues.reject { |v| v.data["visible"] }
-  hidden.each { |v| Jekyll.logger.info "Junkie:", "Skjuler #{v.relative_path} (ingen publiserte anmeldelser)" }
+  hidden.each { |v| Jekyll.logger.info "Junkie info:", "#{v.relative_path} har ingen publisert anmeldelse og vises ikke#{show_drafts ? "" : " (utkast teller ikke i produksjon)"}" }
   site.collections["steder"].docs.reject! { |v| !v.data["visible"] } if site.collections["steder"]
   visible_venues = site.collections["steder"]&.docs || []
 
@@ -397,9 +397,10 @@ Jekyll::Hooks.register :site, :post_read do |site|
   feed_pages = [[]] if feed_pages.empty?
 
   # Rapport: advarsler alltid, feil stopper produksjonsbygg
-  problems[:warnings].uniq.each { |w| Jekyll.logger.warn "Junkie:", w }
+  problems[:warnings].uniq.each { |w| Jekyll.logger.warn "Junkie advarsel:", w }
+  problems[:errors].uniq.each { |e| Jekyll.logger.error "Junkie feil:", e }
+  Jekyll.logger.info "Junkie status:", "#{problems[:errors].uniq.size} feil, #{problems[:warnings].uniq.size} advarsler, #{hidden.size} skjulte steder"
   unless problems[:errors].empty?
-    problems[:errors].uniq.each { |e| Jekyll.logger.error "Junkie:", e }
     raise Jekyll::Errors::FatalException, "Junkie: #{problems[:errors].uniq.size} feil i innholdet (se over)" if Junkie.production?
   end
 

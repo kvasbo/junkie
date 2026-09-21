@@ -6,16 +6,23 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 DEST="$(mktemp -d)"
 trap 'rm -rf "$DEST"' EXIT
-OUT="$(JEKYLL_ENV=production bundle exec jekyll build --destination "$DEST" 2>&1)"
-STATUS=$?
-echo "$OUT" | sed 's/\x1b\[[0-9;]*m//g' | grep -E "Junkie:" | sed 's/^ *Junkie: */  /' || true
-if [ $STATUS -ne 0 ]; then
-  echo; echo "FEIL – produksjonsbygget stopper. Rett opp og kjør igjen."
+OUT="$(JEKYLL_ENV=production bundle exec jekyll build --destination "$DEST" 2>&1 | sed 's/\x1b\[[0-9;]*m//g')"
+STATUS=${PIPESTATUS[0]}
+
+vis() { echo "$OUT" | grep -E "^ *Junkie $1:" | sed "s/^ *Junkie $1: */  /"; }
+FEIL="$(vis feil)"; ADV="$(vis advarsel)"; INFO="$(vis info)"
+[ -n "$FEIL" ] && { echo "FEIL (stopper bygget):"; echo "$FEIL"; echo; }
+[ -n "$ADV" ]  && { echo "Advarsler:"; echo "$ADV"; echo; }
+[ -n "$INFO" ] && { echo "Info:"; echo "$INFO"; echo; }
+
+if [ "$STATUS" -ne 0 ] || [ -n "$FEIL" ]; then
+  echo "Rett opp feilene over og kjør igjen."
+  [ -z "$FEIL" ] && echo "$OUT" | tail -5
   exit 1
 fi
-N="$(echo "$OUT" | grep -c 'Junkie:')"
-if [ "$N" -gt 0 ]; then
-  echo; echo "OK med $N advarsler. Bygget går gjennom, men se over lista."
+SIDER="$(find "$DEST" -name '*.html' | wc -l | tr -d ' ')"
+if [ -n "$ADV" ]; then
+  echo "OK: $SIDER sider bygget. Advarslene over stopper ikke bygget, men bør ses på."
 else
-  echo "Alt i orden: $(find "$DEST" -name '*.html' | wc -l | tr -d ' ') sider bygget uten advarsler."
+  echo "Alt i orden: $SIDER sider bygget."
 fi
