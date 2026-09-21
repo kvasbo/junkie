@@ -17,3 +17,9 @@
 - slug: shawarma
   name: shawarma
   description: Kebabens voksne storebror.
+- slug: falafel
+  name: Falafel
+  description: Må lages fersk.
+- slug: sandwich
+  name: Sandwich
+  description: Alt annet på listen kan defineres som en sandwich også om man er pedantisk.
