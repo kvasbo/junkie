@@ -2,7 +2,7 @@
 
 ## Konsept
 
-**Junkie** er en redaksjonell gatemat-guide for Oslo — en "Michelin-guide for kebab." Kvalitetssikrede anmeldelser av enkelt-retter fra gatekjøkken, kebabsjapper, pizzasteder og tacobarer. Tre stjerner, ingen bullshit.
+**Junkie** er en redaksjonell gatemat-guide for Oslo — en "Michelin-guide for kebab." Kvalitetssikrede anmeldelser av enkelt-retter fra gatekjøkken, kebabsjapper, pizzasteder og tacobarer.
 
 ---
 
