@@ -4,7 +4,7 @@ title: Lammeshawarma
 score: 1
 visited: 2026-09
 date: 2026-09-21
-status: draft
+status: published
 tags: [shawarma, rent kjøtt]
 images:
   - src: /assets/img/anmeldelser/rooster-202609.jpg
