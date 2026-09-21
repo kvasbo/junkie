@@ -31,7 +31,13 @@ Alt innhold er markdown-filer i git. Tre samlinger:
 | `_anmeldelser/` | Én rett per fil. Peker på stedet med `venue:`. | Ingen egen side – vises på steds-siden med ankerpunkt `#<rett>-<YYYY-MM>` |
 | `_lister/` | Kuratert liste med håndplukkede anmeldelser. | `/lister/<slug>/` |
 
-Maler med alle felter dokumentert ligger i `_templates/`. Bruk `bin/ny` for å lage nye filer fra malene:
+Enklest er den interaktive veiviseren, som spør om det viktigste og skriver ren front matter uten kommentarer:
+
+```sh
+bin/sted          # nytt sted (også kjeder med flere lokasjoner) + valgfri første anmeldelse
+```
+
+Koordinater kan limes inn som «59.912, 10.765» eller som en Google Maps-URL. Alternativt lager `bin/ny` filer fra malene i `_templates/`, med alle felter dokumentert i kommentarer:
 
 ```sh
 bin/ny sted "Kebab Huset"                    # _steder/kebab-huset.md
@@ -162,7 +168,7 @@ assets/vendor/       Leaflet 1.9.4 (selvhostet)
 assets/fonts/        Lilita One (OFL, selvhostet)
 _data/               kategorier, bydeler, nav, testes
 _templates/          Maler for sted, anmeldelse, liste
-bin/                 ny (lag filer fra mal)
+bin/                 sted (interaktiv veiviser), ny (lag filer fra mal)
 ```
 
 ## Sjekkliste før lansering

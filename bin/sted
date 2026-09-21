@@ -1,0 +1,217 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# Interaktiv veiviser for nytt sted (og valgfritt første anmeldelse).
+#
+#   bin/sted
+#
+# Spør om det viktigste, skriver _steder/<slug>.md med ren front matter,
+# og kan lage _anmeldelser/<slug>-<rett>-<YYYY-MM>.md i samme slengen.
+# Tomt svar = standardverdi i [klammer]. Ctrl-C avbryter uten å skrive noe.
+#
+require "date"
+require "fileutils"
+require "yaml"
+
+Encoding.default_external = Encoding::UTF_8
+$stdin.set_encoding(Encoding::UTF_8)
+$stdout.set_encoding(Encoding::UTF_8)
+
+ROOT = File.expand_path("..", __dir__)
+KATEGORIER = YAML.load_file(File.join(ROOT, "_data/kategorier.yml")) || []
+BYDELER    = YAML.load_file(File.join(ROOT, "_data/bydeler.yml")) || []
+
+def slugify(s)
+  s.to_s.downcase.tr("æøå", "aoa").gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
+end
+
+def ask(label, default = nil, required: false)
+  loop do
+    prompt = default.to_s.empty? ? "#{label}: " : "#{label} [#{default}]: "
+    print prompt
+    line = $stdin.gets
+    abort "\nAvbrutt." if line.nil?
+    line = line.strip
+    line = default.to_s if line.empty?
+    return line unless required && line.empty?
+    puts "  Må fylles ut."
+  end
+end
+
+def ja?(label, default: false)
+  svar = ask("#{label} (#{default ? 'J/n' : 'j/N'})", "").downcase
+  return default if svar.empty?
+  svar.start_with?("j", "y")
+end
+
+def ask_multiline(label)
+  puts "#{label} (avslutt med en tom linje, eller trykk Enter med en gang for å hoppe over):"
+  lines = []
+  loop do
+    line = $stdin.gets
+    break if line.nil? || line.strip.empty?
+    lines << line.rstrip
+  end
+  lines.join("\n")
+end
+
+# "59.912, 10.765" | "59.912 10.765" | Google Maps-URL med @lat,lng eller ?q=lat,lng
+def parse_coords(str)
+  m = str.match(/(-?\d{1,2}[.,]\d+)[\s,]+(-?\d{1,3}[.,]\d+)/)
+  return nil unless m
+  [m[1].tr(",", "."), m[2].tr(",", ".")].map { |x| x.to_f.round(6) }
+end
+
+def pick_kategorier
+  puts "Kategorier: " + KATEGORIER.map { |k| "#{k['slug']} (#{k['name']})" }.join(", ")
+  loop do
+    svar = ask("Kategorier, kommaseparert", KATEGORIER.first&.[]("slug"))
+    valgt = svar.split(",").map { |s| s.strip }.reject(&:empty?).map do |s|
+      hit = KATEGORIER.find { |k| k["slug"] == slugify(s) || k["name"].to_s.casecmp?(s) }
+      hit ? hit["slug"] : slugify(s)
+    end.uniq
+    ukjente = valgt - KATEGORIER.map { |k| k["slug"] }
+    unless ukjente.empty?
+      puts "  Ukjent kategori: #{ukjente.join(', ')} (finnes ikke i _data/kategorier.yml)."
+      next unless ja?("  Bruk likevel?", default: false)
+    end
+    return valgt unless valgt.empty?
+  end
+end
+
+def pick_bydel(default = nil)
+  svar = ask("Bydel/strøk (navn eller slug, tomt = ingen)", default)
+  return nil if svar.empty?
+  hit = BYDELER.find { |b| b["slug"] == slugify(svar) || b["name"].to_s.casecmp?(svar) }
+  if hit
+    hit["slug"]
+  else
+    puts "  «#{svar}» finnes ikke i _data/bydeler.yml – bruker slug «#{slugify(svar)}» (navnet blir slugen på siden)."
+    slugify(svar)
+  end
+end
+
+def ask_lokasjon(navn_paakrevd)
+  l = {}
+  l["name"] = ask("Lokasjonens navn (f.eks. Kirkeristen)", nil, required: true) if navn_paakrevd
+  l["address"] = ask("Adresse", nil, required: true)
+  loop do
+    c = parse_coords(ask("Koordinater (lim inn «lat, lng» eller Google Maps-URL)", ""))
+    if c
+      l["lat"], l["lng"] = c
+      break
+    end
+    break if ja?("  Fant ingen koordinater. Hopp over (ingen kartnål)?", default: false)
+  end
+  url = ask("Google Maps-lenke (valgfri)", "")
+  l["google_maps_url"] = url unless url.empty?
+  l["bydel"] = pick_bydel
+  l["status"] = "closed" if navn_paakrevd && ja?("Er denne lokasjonen nedlagt?", default: false)
+  l
+end
+
+def yaml_scalar(v)
+  case v
+  when nil then ""
+  when Float, Integer then v.to_s
+  else
+    s = v.to_s
+    s =~ /[:#\[\]{}&*!|>'"%@`,]|\A\s|\s\z/ || s.empty? ? s.inspect : s
+  end
+end
+
+puts "== Nytt sted =="
+title = ask("Navn på stedet", nil, required: true)
+slug  = ask("Slug (filnavn og URL)", slugify(title))
+sted_path = File.join(ROOT, "_steder", "#{slug}.md")
+abort "Finnes allerede: _steder/#{slug}.md" if File.exist?(sted_path)
+
+categories = pick_kategorier
+
+flere = ja?("Har stedet flere lokasjoner (kjede)?", default: false)
+lokasjoner = []
+if flere
+  loop do
+    puts "-- Lokasjon #{lokasjoner.size + 1} --"
+    lokasjoner << ask_lokasjon(true)
+    break unless ja?("Legg til enda en lokasjon?", default: true)
+  end
+else
+  lokasjoner << ask_lokasjon(false)
+end
+
+nedlagt = !flere && ja?("Er stedet nedlagt?", default: false)
+closed_at = nedlagt ? ask("Når la det ned? (YYYY-MM)", Date.today.strftime("%Y-%m")) : nil
+kommentar = ask_multiline("Redaksjonell kommentar om stedet (markdown)")
+
+fm = +"---\n"
+fm << "title: #{yaml_scalar(title)}\n"
+fm << "categories: [#{categories.join(', ')}]\n"
+if flere
+  fm << "locations:\n"
+  lokasjoner.each do |l|
+    fm << "  - name: #{yaml_scalar(l['name'])}\n"
+    fm << "    address: #{yaml_scalar(l['address'])}\n"
+    fm << "    lat: #{l['lat']}\n    lng: #{l['lng']}\n" if l["lat"]
+    fm << "    google_maps_url: #{l['google_maps_url']}\n" if l["google_maps_url"]
+    fm << "    bydel: #{l['bydel']}\n" if l["bydel"]
+    fm << "    status: closed\n" if l["status"] == "closed"
+  end
+else
+  l = lokasjoner.first
+  fm << "bydel: #{l['bydel']}\n" if l["bydel"]
+  fm << "address: #{yaml_scalar(l['address'])}\n"
+  fm << "lat: #{l['lat']}\nlng: #{l['lng']}\n" if l["lat"]
+  fm << "google_maps_url: #{l['google_maps_url']}\n" if l["google_maps_url"]
+end
+fm << "cover_image:\n"
+fm << "score_override:\n"
+fm << "status: #{nedlagt ? 'closed' : 'open'}\n"
+fm << "closed_at: #{closed_at}\n" if closed_at
+fm << "---\n"
+fm << kommentar << "\n" unless kommentar.empty?
+
+FileUtils.mkdir_p(File.dirname(sted_path))
+File.write(sted_path, fm)
+puts "\nSkrev _steder/#{slug}.md"
+
+# --- valgfri første anmeldelse ------------------------------------------
+if ja?("\nLage første anmeldelse nå?", default: true)
+  puts "== Ny anmeldelse =="
+  rett = ask("Rettens navn", nil, required: true)
+  score = nil
+  loop do
+    s = ask("Score (0–3)", "0")
+    if s =~ /\A[0-3]\z/
+      score = s.to_i
+      break
+    end
+    puts "  0, 1, 2 eller 3."
+  end
+  visited = ask("Besøkt (YYYY-MM)", Date.today.strftime("%Y-%m"))
+  tags = ask("Tags, kommaseparert", categories.first).split(",").map(&:strip).reject(&:empty?)
+  publiser = ja?("Publiser med en gang (ellers utkast)?", default: false)
+  body = ask_multiline("Anmeldelsen (markdown, 2–5 setninger)")
+
+  key = "#{slug}-#{slugify(rett)}-#{visited}"
+  anm_path = File.join(ROOT, "_anmeldelser", "#{key}.md")
+  abort "Finnes allerede: _anmeldelser/#{key}.md" if File.exist?(anm_path)
+
+  a = +"---\n"
+  a << "venue: #{slug}\n"
+  a << "title: #{yaml_scalar(rett)}\n"
+  a << "score: #{score}\n"
+  a << "visited: #{visited}\n"
+  a << "date: #{Date.today}\n"
+  a << "status: #{publiser ? 'published' : 'draft'}\n"
+  a << "tags: [#{tags.join(', ')}]\n"
+  a << "images:\n"
+  a << "#  - src: /assets/img/anmeldelser/#{key}/1.jpg\n"
+  a << "#    alt: #{rett}\n"
+  a << "---\n"
+  a << (body.empty? ? "Skriv anmeldelsen her.\n" : body + "\n")
+  File.write(anm_path, a)
+  puts "Skrev _anmeldelser/#{key}.md#{publiser ? '' : ' (utkast – sett status: published når den er klar)'}"
+end
+
+puts "\nSe resultatet med: bundle exec jekyll serve"
