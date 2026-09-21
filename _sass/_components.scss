@@ -71,6 +71,23 @@
   background: var(--rosa); color: #111; text-decoration: none;
   border: var(--ramme-b) solid var(--ramme); border-radius: 999px; box-shadow: 4px 4px 0 var(--skygge);
   &:hover { background: var(--gul); }
+  &--sekundaer { background: var(--bg-alt); color: var(--tekst); &:hover { background: var(--gul); color: #111; } }
+}
+
+.paginering {
+  display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin: 8px 0 32px;
+  &__side { color: var(--demp); }
+}
+.feed__alle { text-align: center; margin: -8px 0 32px; }
+
+.filter {
+  display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: end; margin: 0 0 20px; padding: 12px 14px;
+  background: var(--bg-alt); border: var(--ramme-b) solid var(--ramme); border-radius: var(--radius);
+  &__felt { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--demp); }
+  &__felt--sjekk { flex-direction: row; align-items: center; text-transform: none; letter-spacing: 0; font-size: 0.95rem; color: var(--tekst); padding-bottom: 6px; }
+  select { font: inherit; font-size: 1rem; text-transform: none; letter-spacing: 0; color: var(--tekst); background: var(--bg); padding: 0.4rem 0.6rem; border: 2px solid var(--ramme); border-radius: 8px; }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--rosa); }
+  &__antall { margin-left: auto; align-self: center; color: var(--demp); font-size: 0.95rem; }
 }
 
 // Chips (kategorier) og tags

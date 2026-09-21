@@ -14,11 +14,12 @@
 /assets/img/*
   Cache-Control: public, max-age=604800
 
+# CSS/JS har ?v=<hash> i URL-en, så de kan caches lenge
 /assets/css/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=31536000, immutable
 
 /assets/js/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=31536000, immutable
 
 /*.json
   Cache-Control: public, max-age=300

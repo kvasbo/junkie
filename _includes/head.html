@@ -7,7 +7,7 @@
   {% seo title=false %}
   <title>{% if page.title and page.url != "/" %}{{ page.title }} – {{ site.title }}{% else %}{{ site.title }} – {{ site.tagline }}{% endif %}</title>
   <link rel="preload" href="{{ '/assets/fonts/lilita-one-latin.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.data.asset_hash }}">
   {% if page.map %}<link rel="stylesheet" href="{{ '/assets/vendor/leaflet/leaflet.css' | relative_url }}">{% endif %}
   <link rel="icon" href="{{ '/assets/img/favicon.svg' | relative_url }}" type="image/svg+xml">
   {% if page.md_url %}<link rel="alternate" type="text/markdown" href="{{ page.md_url | absolute_url }}">{% endif %}

@@ -15,6 +15,9 @@ map:
   # Alternativ: https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png
   tiles: https://tile.openstreetmap.org/{z}/{x}/{y}.png
 
+# Antall kort per side i feeden (forsiden + /side/N/)
+feed_per_page: 24
+
 # Standard OG-bilde for sider uten eget bilde
 default_image: /assets/img/og-default.png
 

@@ -3,6 +3,7 @@ title: Alle steder
 description: Alle steder Junkie har anmeldt i Oslo, sortert etter score.
 permalink: /steder/
 map: true
+filter: true
 ---
 {%- assign j = site.data.junkie -%}
 <header class="side__topp">
@@ -10,4 +11,27 @@ map: true
   <p class="side__meta">{{ j.venues.size }} {% if j.venues.size == 1 %}sted{% else %}steder{% endif %} · <a href="{{ '/kart/' | relative_url }}">Fullskjermkart</a></p>
 </header>
 <div class="kart kart--oversikt" id="kart" data-src="{{ '/steder.json' | relative_url }}" data-center="{{ site.map.center | join: ',' }}" data-zoom="{{ site.map.zoom }}" data-tiles="{{ site.map.tiles }}" aria-label="Kart over alle anmeldte steder"></div>
+<form class="filter" id="steder-filter" aria-label="Sorter og filtrer steder" hidden>
+  <label class="filter__felt">Sorter
+    <select name="sort">
+      <option value="score">Score</option>
+      <option value="navn">Navn</option>
+      <option value="dato">Sist anmeldt</option>
+    </select>
+  </label>
+  <label class="filter__felt">Bydel
+    <select name="bydel">
+      <option value="">Alle</option>
+      {%- for b in j.bydeler -%}<option value="{{ b.slug }}">{{ b.name }} ({{ b.count }})</option>{%- endfor -%}
+    </select>
+  </label>
+  <label class="filter__felt">Kategori
+    <select name="kat">
+      <option value="">Alle</option>
+      {%- for k in j.kategorier -%}{%- if k.count > 0 -%}<option value="{{ k.slug }}">{{ k.name }} ({{ k.count }})</option>{%- endif -%}{%- endfor -%}
+    </select>
+  </label>
+  <label class="filter__felt filter__felt--sjekk"><input type="checkbox" name="skjulnedlagt"> Skjul nedlagte</label>
+  <span class="filter__antall" id="steder-antall" role="status" aria-live="polite"></span>
+</form>
 {% include steder-rutenett.html venues=j.venues %}

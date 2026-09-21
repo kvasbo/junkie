@@ -1,6 +1,8 @@
 {%- comment -%}
-  Bilde. Bruk: {% include img.html src=bilde.src alt=bilde.alt class="kort__bilde" %}
+  Bilde. Bruk: {% include img.html bilde=b class="kort__bilde" %}  (b = hash med src, alt, width, height)
 {%- endcomment -%}
-<img src="{{ include.src | relative_url }}" alt="{{ include.alt | default: '' | escape }}"
+{%- assign b = include.bilde -%}
+<img src="{{ b.src | relative_url }}" alt="{{ b.alt | default: '' | escape }}"
+  {%- if b.width and b.height %} width="{{ b.width }}" height="{{ b.height }}"{% endif %}
   {%- if include.class %} class="{{ include.class }}"{% endif %}
   loading="{{ include.loading | default: 'lazy' }}" decoding="async">

@@ -1,0 +1,29 @@
+{%- comment -%}
+  Feed-rutenett med paginering. Bruk: {% include feed-rutenett.html reviews=slice page_num=1 page_total=n %}
+{%- endcomment -%}
+{%- if include.reviews.size > 0 -%}
+<ul class="rutenett">
+  {%- for r in include.reviews -%}
+  {%- assign lazy = "lazy" -%}{%- if forloop.index <= 2 -%}{%- assign lazy = "eager" -%}{%- endif -%}
+  <li>{% include anmeldelse-kort.html review=r loading=lazy %}</li>
+  {%- endfor -%}
+</ul>
+{%- else -%}
+<p class="tom">Ingen anmeldelser publisert ennå. Vi spiser så fort vi kan.</p>
+{%- endif -%}
+{%- if include.page_total > 1 -%}
+<nav class="paginering" aria-label="Flere anmeldelser">
+  {%- if include.page_num > 1 -%}
+    {%- if include.page_num == 2 -%}
+    <a class="knapp knapp--sekundaer" href="{{ '/' | relative_url }}" rel="prev">← Nyere</a>
+    {%- else -%}
+    <a class="knapp knapp--sekundaer" href="{{ '/side/' | append: include.page_num | minus: 1 | append: '/' | relative_url }}" rel="prev">← Nyere</a>
+    {%- endif -%}
+  {%- endif -%}
+  <span class="paginering__side">Side {{ include.page_num }} av {{ include.page_total }}</span>
+  {%- if include.page_num < include.page_total -%}
+  {%- assign neste = include.page_num | plus: 1 -%}
+  <a class="knapp knapp--sekundaer" href="{{ '/side/' | append: neste | append: '/' | relative_url }}" rel="next">Eldre →</a>
+  {%- endif -%}
+</nav>
+{%- endif -%}

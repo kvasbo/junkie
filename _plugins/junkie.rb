@@ -60,6 +60,66 @@ module Junkie
     val.to_i.clamp(0, 3)
   end
 
+  # Leser bredde/høyde fra JPEG-, PNG-, GIF- og WebP-headere. Ingen bildebehandling.
+  def image_dimensions(path)
+    return nil unless File.file?(path)
+    File.open(path, "rb") do |f|
+      head = f.read(32) || ""
+      if head.start_with?("\x89PNG".b)
+        return head[16, 8].unpack("N2")
+      elsif head.start_with?("GIF8".b)
+        return head[6, 4].unpack("v2")
+      elsif head.start_with?("RIFF".b) && head[8, 4] == "WEBP".b
+        chunk = head[12, 4]
+        f.seek(12)
+        data = f.read(30) || ""
+        case chunk
+        when "VP8 ".b then return data[14, 4].unpack("v2").map { |x| x & 0x3fff }
+        when "VP8L".b then b = data[9, 4].unpack("C4"); return [(b[0] | (b[1] & 0x3f) << 8) + 1, ((b[1] >> 6) | b[2] << 2 | (b[3] & 0xf) << 10) + 1]
+        when "VP8X".b then return [1 + (data[12, 3].unpack1("V") & 0xffffff), 1 + (data[15, 3].unpack1("V") & 0xffffff)] rescue nil
+        end
+      elsif head.start_with?("\xFF\xD8".b)
+        f.seek(2)
+        loop do
+          marker = f.read(2)
+          break if marker.nil? || marker.bytesize < 2 || marker.getbyte(0) != 0xFF
+          m = marker.getbyte(1)
+          next if m == 0xFF
+          len = f.read(2)&.unpack1("n") or break
+          if [0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF].include?(m)
+            seg = f.read(5)
+            return seg[3, 2].unpack1("n"), seg[1, 2].unpack1("n") if seg && seg.bytesize == 5
+            break
+          end
+          f.seek(len - 2, IO::SEEK_CUR)
+        end
+      end
+    end
+    nil
+  rescue StandardError
+    nil
+  end
+
+  # Normaliserer et bilde (streng eller hash) og fyller inn bredde/høyde. Returnerer nil ved manglende fil.
+  def image_info(site, img, fallback_alt, problems, owner)
+    img = { "src" => img } if img.is_a?(String)
+    return nil unless img.is_a?(Hash) && !img["src"].to_s.strip.empty?
+    src = img["src"].to_s.strip
+    info = img.merge("src" => src, "alt" => (img["alt"].to_s.empty? ? fallback_alt.to_s : img["alt"].to_s))
+    unless src.start_with?("http")
+      path = File.join(site.source, src.sub(%r{\A/}, ""))
+      dims = image_dimensions(path)
+      if dims
+        info["width"], info["height"] = dims
+      elsif File.file?(path)
+        problems[:warnings] << "#{owner}: fant ikke bildestørrelse for #{src}"
+      else
+        problems[:errors] << "#{owner}: bildet #{src} finnes ikke i repoet"
+      end
+    end
+    info
+  end
+
   def excerpt(markdown, length = 180)
     text = markdown.to_s
       .gsub(/!\[[^\]]*\]\([^)]*\)/, "")        # bilder
@@ -108,6 +168,16 @@ Jekyll::Hooks.register :site, :post_read do |site|
   lists   = site.collections["lister"]&.docs || []
 
   default_image = site.config["default_image"]
+  problems = { errors: [], warnings: [] }
+  site.data["problems"] = problems
+
+  # Hash av CSS/JS-kildene for cache-busting (?v=...)
+  require "digest"
+  asset_files = Dir[File.join(site.source, "_sass", "**", "*.scss")] +
+                Dir[File.join(site.source, "assets", "css", "*.scss")] +
+                Dir[File.join(site.source, "assets", "js", "*.js")]
+  site.data["asset_hash"] = Digest::MD5.hexdigest(asset_files.sort.map { |f| File.read(f, encoding: "UTF-8") }.join)[0, 8]
+
   kategorier = (site.data["kategorier"] || []).each_with_object({}) { |k, h| h[k["slug"]] = k }
   bydeler    = (site.data["bydeler"] || []).each_with_object({}) { |b, h| h[b["slug"]] = b }
 
@@ -118,13 +188,22 @@ Jekyll::Hooks.register :site, :post_read do |site|
   reviews.each do |r|
     r.data["key"]     = r.basename_without_ext
     r.data["status"]  = (r.data["status"] || "draft").to_s
+    unless %w[draft published archived].include?(r.data["status"])
+      problems[:errors] << "#{r.relative_path}: ukjent status '#{r.data['status']}' (draft | published | archived)"
+    end
+    raw_score = r.data["score"]
+    if raw_score.nil? || raw_score.to_s.strip.empty? || raw_score.to_s !~ /\A[0-3]\z/
+      problems[:errors] << "#{r.relative_path}: score må være 0, 1, 2 eller 3 (er '#{raw_score}')"
+    end
+    problems[:errors] << "#{r.relative_path}: mangler title (rettens navn)" if r.data["title"].to_s.strip.empty?
+    problems[:errors] << "#{r.relative_path}: visited må være YYYY-MM (er '#{r.data['visited']}')" unless Junkie.month_key(r.data["visited"]).to_s =~ /\A\d{4}-\d{2}\z/
     r.data["score"]   = Junkie.clamp_score(r.data["score"]) || 0
     r.data["visited"] = Junkie.month_key(r.data["visited"])
     r.data["visited_label"] = Junkie.month_label(r.data["visited"])
     r.data["dish_slug"] = Junkie.slugify(r.data["title"])
     r.data["anchor"]  = r.data["anchor"].to_s.empty? ? "#{r.data['dish_slug']}-#{r.data['visited']}" : r.data["anchor"].to_s
     r.data["excerpt"] = Junkie.excerpt(r.content)
-    r.data["images"]  = Array(r.data["images"]).map { |i| i.is_a?(String) ? { "src" => i, "alt" => "" } : i }
+    r.data["images"]  = Array(r.data["images"]).map { |i| Junkie.image_info(site, i, r.data["title"], problems, r.relative_path) }.compact
     r.data["image"]   = r.data["images"].first && r.data["images"].first["src"]
     r.data["tags"]    = Array(r.data["tags"]).map(&:to_s).map(&:strip).reject(&:empty?)
     r.data["tag_slugs"] = r.data["tags"].map { |t| Junkie.slugify(t) }
@@ -134,7 +213,7 @@ Jekyll::Hooks.register :site, :post_read do |site|
 
     venue = venue_by_key[r.data["venue"].to_s]
     if venue.nil?
-      Jekyll.logger.warn "Junkie:", "Anmeldelse #{r.relative_path} peker på ukjent sted '#{r.data['venue']}'"
+      problems[:errors] << "#{r.relative_path}: peker på ukjent sted '#{r.data['venue']}' (finnes ikke i _steder/)"
       r.data["public"] = false
       next
     end
@@ -151,6 +230,9 @@ Jekyll::Hooks.register :site, :post_read do |site|
     v.data["closed"] = v.data["status"] == "closed"
     v.data["closed_label"] = Junkie.month_label(Junkie.month_key(v.data["closed_at"]))
     v.data["categories"] = Array(v.data["categories"]).map { |c| Junkie.slugify(c) }
+    problems[:warnings] << "#{v.relative_path}: mangler categories" if v.data["categories"].empty?
+    (v.data["categories"] - kategorier.keys).each { |c| problems[:warnings] << "#{v.relative_path}: kategorien '#{c}' finnes ikke i _data/kategorier.yml" }
+    v.data["cover"] = Junkie.image_info(site, v.data["cover_image"], v.data["title"], problems, v.relative_path)
     v.data["category_data"] = v.data["categories"].map { |c| kategorier[c] || { "slug" => c, "name" => c.capitalize } }
     v.data["summary"] = v.content.to_s.strip
 
@@ -194,6 +276,10 @@ Jekyll::Hooks.register :site, :post_read do |site|
     pub = pub.sort_by { |r| [r.data["visited"].to_s, r.data["date"].to_s] }.reverse
     v.data["reviews"] = pub
     v.data["review_count"] = pub.size
+    pub.group_by { |r| r.data["anchor"] }.each do |anchor, rs|
+      next if rs.size < 2
+      problems[:errors] << "#{v.relative_path}: #{rs.size} anmeldelser får samme anker '##{anchor}' (#{rs.map(&:relative_path).join(', ')}) – sett anchor: i en av dem"
+    end
     v.data["visible"] = !pub.empty?
 
     auto = pub.map { |r| r.data["score"] }.max
@@ -218,7 +304,8 @@ Jekyll::Hooks.register :site, :post_read do |site|
 
     v.data["tags"] = pub.flat_map { |r| r.data["tags"] }.uniq
     v.data["tag_slugs"] = pub.flat_map { |r| r.data["tag_slugs"] }.uniq
-    v.data["image"] = v.data["cover_image"] || v.data["featured_review"]&.data&.[]("image") || default_image
+    v.data["image"] = v.data["cover"]&.[]("src") || v.data["featured_review"]&.data&.[]("image") || default_image
+    v.data["card_image"] = v.data["cover"] || v.data["featured_review"]&.data&.[]("images")&.first
     v.data["latest_date"] = pub.map { |r| r.data["date"] }.max
     v.data["date"] ||= v.data["latest_date"]
     v.data["description"] ||= if v.data["summary"].empty?
@@ -232,6 +319,7 @@ Jekyll::Hooks.register :site, :post_read do |site|
       r.data["tags"].each_with_index do |t, i|
         entry = tags_index[r.data["tag_slugs"][i]]
         entry["name"] ||= t
+        problems[:warnings] << "#{r.relative_path}: tag '#{t}' er skrevet '#{entry['name']}' andre steder – samme side, men første stavemåte vises" if entry["name"] != t
         entry["reviews"] << r
       end
     end
@@ -254,7 +342,7 @@ Jekyll::Hooks.register :site, :post_read do |site|
       item = { "review" => item } if item.is_a?(String)
       review = reviews.find { |r| r.data["key"] == item["review"].to_s }
       if review.nil? || review.data["venue_doc"].nil?
-        Jekyll.logger.warn "Junkie:", "Liste #{l.relative_path} peker på ukjent anmeldelse '#{item['review']}'"
+        problems[:errors] << "#{l.relative_path}: peker på ukjent anmeldelse '#{item['review']}' (filnavn i _anmeldelser/ uten .md)"
         next
       end
       next if review.data["status"] == "draft" && !show_drafts
@@ -266,7 +354,8 @@ Jekyll::Hooks.register :site, :post_read do |site|
       }
     end.compact
     l.data["items"] = items
-    l.data["image"] = items.map { |i| i["review"].data["image"] || i["venue"].data["cover_image"] }.compact.first || default_image
+    l.data["card_image"] = items.map { |i| i["review"].data["images"].first || i["venue"].data["cover"] }.compact.first
+    l.data["image"] = l.data["card_image"]&.[]("src") || default_image
   end
   site.collections["lister"].docs.reject! { |l| !l.data["public"] } if site.collections["lister"]
   # Uten lister: hold /lister/ ute av menyen (header.html) og sitemap
@@ -303,8 +392,21 @@ Jekyll::Hooks.register :site, :post_read do |site|
     b
   end.sort_by { |b| b["name"].to_s }
 
+  per_page = (site.config["feed_per_page"] || 24).to_i
+  feed_pages = feed.each_slice(per_page).to_a
+  feed_pages = [[]] if feed_pages.empty?
+
+  # Rapport: advarsler alltid, feil stopper produksjonsbygg
+  problems[:warnings].uniq.each { |w| Jekyll.logger.warn "Junkie:", w }
+  unless problems[:errors].empty?
+    problems[:errors].uniq.each { |e| Jekyll.logger.error "Junkie:", e }
+    raise Jekyll::Errors::FatalException, "Junkie: #{problems[:errors].uniq.size} feil i innholdet (se over)" if Junkie.production?
+  end
+
   site.data["junkie"] = {
     "feed" => feed,
+    "feed_pages" => feed_pages,
+    "per_page" => per_page,
     "reviews" => reviews.select { |r| r.data["public"] && r.data["venue_doc"] }.sort_by { |r| r.data["date"] }.reverse,
     "venues" => visible_venues.sort_by { |v| [-v.data["score"], v.data["title"].to_s.downcase] },
     "tags" => tag_list,
@@ -352,6 +454,22 @@ module Junkie
       j["bydeler"].each do |b|
         site.pages << TermPage.new(site, "bydel/#{b['slug']}", "bydel", b,
           "description" => "Gatemat i #{b['name']} anmeldt av Junkie.")
+      end
+
+      # Feed-sider: /side/2/, /side/3/ ... (side 1 er forsiden)
+      j["feed_pages"].each_with_index do |slice, i|
+        next if i.zero?
+        page = Jekyll::PageWithoutAFile.new(site, site.source, "side/#{i + 1}", "index.html")
+        page.data = {
+          "layout" => "feed",
+          "title" => "Siste anmeldelser, side #{i + 1}",
+          "description" => "Junkies anmeldelser, side #{i + 1} av #{j['feed_pages'].size}.",
+          "feed_slice" => slice,
+          "page_num" => i + 1,
+          "page_total" => j["feed_pages"].size,
+          "sitemap" => true,
+        }
+        site.pages << page
       end
     end
   end

@@ -15,7 +15,7 @@ permalink: /lister/
     <article class="kort kort--liste">
       <a class="kort__lenke" href="{{ l.url | relative_url }}">
         <div class="kort__media">
-          {%- if l.image and l.image != site.default_image -%}{% include img.html src=l.image alt="" class="kort__bilde" %}{%- else -%}<div class="kort__plakat" aria-hidden="true">{% include ikon.html slug="annet" %}</div>{%- endif -%}
+          {%- if l.card_image -%}{% include img.html bilde=l.card_image class="kort__bilde" %}{%- else -%}<div class="kort__plakat" aria-hidden="true">{% include ikon.html slug="annet" %}</div>{%- endif -%}
           {%- if l.draft %}<span class="kort__utkast">Utkast</span>{% endif -%}
         </div>
         <div class="kort__tekst">

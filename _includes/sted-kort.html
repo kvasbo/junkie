@@ -8,14 +8,12 @@
 {%- if include.review %}{% assign href = include.review.lenke %}{% endif -%}
 {%- assign k0 = v.categories | first -%}
 {%- assign b0 = r.images | first -%}
-{%- assign bilde = v.cover_image | default: r.image -%}
-{%- assign bilde_alt = v.title -%}
-{%- if bilde == r.image and b0.alt %}{% assign bilde_alt = b0.alt %}{% endif -%}
+{%- assign bilde = v.cover | default: b0 -%}
 <article class="kort kort--sted kort--score-{{ v.score }}{% if include.archived %} kort--arkivert{% endif %}">
   <a class="kort__lenke" href="{{ href | relative_url }}">
     <div class="kort__media">
       {%- if bilde -%}
-        {% include img.html src=bilde alt=bilde_alt class="kort__bilde" %}
+        {% include img.html bilde=bilde class="kort__bilde" %}
       {%- else -%}
         <div class="kort__plakat" aria-hidden="true">{% include ikon.html slug=k0 %}</div>
       {%- endif -%}

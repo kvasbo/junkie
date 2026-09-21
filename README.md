@@ -125,6 +125,8 @@ Intro i markdown.
 - Bydeler/strøk ligger i `_data/bydeler.yml`. Ukjente slugs fungerer også.
 - Tags er frie tekststrenger på anmeldelser. Sider under `/tag/<slug>/` genereres automatisk.
 - «Steder som testes nå» på forsiden styres av `_data/testes.yml`. Steder som har fått en publisert anmeldelse, lenkes automatisk og hakes av.
+- Forsiden viser de `feed_per_page` (24) nyeste anmeldelsene, maks én per sted. Eldre havner på `/side/2/`, `/side/3/` osv.
+- `/steder/` kan sorteres (score, navn, sist anmeldt) og filtreres på bydel og kategori, klientside. Valgene ligger i URL-en (`/steder/?bydel=gronland`), så de kan deles.
 
 ## Bilder
 
@@ -133,7 +135,15 @@ Legg bilder i repoet og referer til dem fra front matter:
 - `assets/img/anmeldelser/<anmeldelse-filnavn>/1.jpg`, `2.jpg`, …
 - `assets/img/steder/<sted-slug>/…`
 
-Bildene serveres som de er, uten resizing. Skaler dem ned selv før du sjekker inn (rundt 1600 px bred og under 500 kB er et greit mål), både for lastetid og fordi de ligger i git.
+Bredde og høyde leses ut av filene ved bygg og settes på `<img>`, så siden ikke hopper mens bildene laster. Bildene serveres som de er, uten resizing. Skaler dem ned selv før du sjekker inn (rundt 1600 px bred og under 500 kB er et greit mål), både for lastetid og fordi de ligger i git.
+
+## Sjekk før push
+
+```sh
+bin/sjekk
+```
+
+Kjører et produksjonsbygg til en midlertidig mappe og lister problemer: bilder som er referert men ikke finnes, score utenfor 0–3, ugyldig `visited`, anmeldelser som peker på ukjente steder, to anmeldelser med samme anker, lister som peker på ukjente anmeldelser, kategorier som ikke finnes i `_data/kategorier.yml`, og tags skrevet med ulik stavemåte. Feil stopper produksjonsbygget (også hos Cloudflare); advarsler gjør det ikke. Lokalt med `jekyll serve` vises alt bare som advarsler.
 
 ## Markdown for maskiner
 
@@ -175,11 +185,12 @@ _includes/           Kort, stjerner, ikoner, JSON-LD
 _sass/               Farger/tokens (lys + mørk), base, layout, komponenter, sider
 assets/js/kart.js    Leaflet-kart (alle steder, ett sted)
 assets/js/sok.js     Klientside-søk mot /sok.json
+assets/js/steder.js  Sortering og filter på /steder/
 assets/vendor/       Leaflet 1.9.4 (selvhostet)
 assets/fonts/        Lilita One (OFL, selvhostet)
 _data/               kategorier, bydeler, nav, testes
 _templates/          Maler for sted, anmeldelse, liste
-bin/                 sted (interaktiv veiviser), ny (lag filer fra mal)
+bin/                 sted (interaktiv veiviser), ny (lag filer fra mal), sjekk (valider innhold)
 ```
 
 ## Sjekkliste før lansering

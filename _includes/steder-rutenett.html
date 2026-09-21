@@ -1,8 +1,8 @@
 {%- assign vs = include.venues | sort: "title" | sort: "score" | reverse -%}
 {%- if vs.size > 0 -%}
-<ul class="rutenett">
+<ul class="rutenett" id="steder-rutenett">
   {%- for v in vs -%}
-  <li>{% include sted-kort.html venue=v %}</li>
+  <li data-score="{{ v.score }}" data-navn="{{ v.title | downcase | escape }}" data-dato="{{ v.latest_date | date: '%Y-%m-%d' }}" data-bydel="{{ v.bydel_slugs | join: ' ' }}" data-kat="{{ v.categories | join: ' ' }}"{% if v.closed %} data-nedlagt="1"{% endif %}>{% include sted-kort.html venue=v %}</li>
   {%- endfor -%}
 </ul>
 {%- else -%}

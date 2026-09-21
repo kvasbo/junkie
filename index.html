@@ -19,16 +19,9 @@ body_class: forside
 
 <section class="feed" aria-labelledby="feed-tittel">
   <h2 class="seksjon__tittel" id="feed-tittel">Siste anmeldelser</h2>
-  {%- if j.feed.size > 0 -%}
-  <ul class="rutenett">
-    {%- for r in j.feed limit: 24 -%}
-    {%- assign lazy = "lazy" -%}{%- if forloop.index <= 2 -%}{%- assign lazy="eager" -%}{%- endif -%} <li>{% include
-      anmeldelse-kort.html review=r loading=lazy %}</li>
-      {%- endfor -%}
-  </ul>
-  {%- else -%}
-  <p class="tom">Ingen anmeldelser publisert ennå. Vi spiser så fort vi kan.</p>
-  {%- endif -%}
+  {%- assign side1 = j.feed_pages | first -%}
+  {% include feed-rutenett.html reviews=side1 page_num=1 page_total=j.feed_pages.size %}
+  <p class="feed__alle"><a class="knapp" href="{{ '/steder/' | relative_url }}">Alle {{ j.venues.size }} steder</a></p>
 </section>
 
 <section class="intro prosa" aria-labelledby="intro-tittel">

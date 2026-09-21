@@ -10,10 +10,13 @@
   {% include footer.html %}
   {% if page.map %}
   <script src="{{ '/assets/vendor/leaflet/leaflet.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/kart.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/kart.js' | relative_url }}?v={{ site.data.asset_hash }}" defer></script>
+  {% endif %}
+  {% if page.filter %}
+  <script src="{{ '/assets/js/steder.js' | relative_url }}?v={{ site.data.asset_hash }}" defer></script>
   {% endif %}
   {% if page.search %}
-  <script src="{{ '/assets/js/sok.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/sok.js' | relative_url }}?v={{ site.data.asset_hash }}" defer></script>
   {% endif %}
 </body>
 </html>

@@ -1,0 +1,8 @@
+---
+layout: default
+---
+<header class="side__topp">
+  <p class="brodsmuler"><a href="{{ '/' | relative_url }}">Forsiden</a></p>
+  <h1 class="side__tittel">Siste anmeldelser</h1>
+</header>
+{% include feed-rutenett.html reviews=page.feed_slice page_num=page.page_num page_total=page.page_total %}
