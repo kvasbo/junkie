@@ -36,7 +36,8 @@ body_class: forside
   <h2 class="seksjon__tittel" id="testes-tittel">{{ testes.title }}</h2>
   <p class="testes__intro">{{ testes.intro }}</p>
   <ul class="testes__liste">
-    {%- for navn in testes.steder -%}
+    {%- assign sorterte = testes.steder | sort_natural -%}
+    {%- for navn in sorterte -%}
     {%- assign treff = j.venues | where: "title", navn | first -%}
     <li class="testes__el{% if treff %} testes__el--ferdig{% endif %}">
       {%- if treff -%}
