@@ -190,6 +190,10 @@ if ja?("\nLage første anmeldelse nå?", default: true)
   end
   visited = ask("Besøkt (YYYY-MM)", Date.today.strftime("%Y-%m"))
   tags = ask("Tags, kommaseparert", categories.first).split(",").map(&:strip).reject(&:empty?)
+  bilde = File.basename(ask("Bildefil i assets/img/anmeldelser/ (tomt = ingen)", ""))
+  if !bilde.empty? && !File.exist?(File.join(ROOT, "assets/img/anmeldelser", bilde))
+    puts "  Advarsel: assets/img/anmeldelser/#{bilde} finnes ikke (ennå)."
+  end
   utkast = ja?("Lagre som utkast (ikke publiser ennå)?", default: false)
   publiser = !utkast
   body = ask_multiline("Anmeldelsen (markdown, 2–5 setninger)")
@@ -207,8 +211,13 @@ if ja?("\nLage første anmeldelse nå?", default: true)
   a << "status: #{publiser ? 'published' : 'draft'}\n"
   a << "tags: [#{tags.join(', ')}]\n"
   a << "images:\n"
-  a << "#  - src: /assets/img/anmeldelser/#{key}/1.jpg\n"
-  a << "#    alt: #{rett}\n"
+  if bilde.empty?
+    a << "#  - src: /assets/img/anmeldelser/#{slug}-#{visited.delete('-')}.jpg\n"
+    a << "#    alt: #{rett}\n"
+  else
+    a << "  - src: /assets/img/anmeldelser/#{bilde}\n"
+    a << "    alt: #{yaml_scalar(rett)}\n"
+  end
   a << "---\n"
   a << (body.empty? ? "Skriv anmeldelsen her.\n" : body + "\n")
   File.write(anm_path, a)

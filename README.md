@@ -95,7 +95,7 @@ date: 2026-03-15               # publiseringsdato, styrer feed-rekkefølge
 status: published              # published (standard) | draft | archived
 tags: [kebab, hjemmelaget pita, halal]
 images:
-  - src: /assets/img/anmeldelser/kebab-huset-kebab-stor-2026-03/1.jpg
+  - src: /assets/img/anmeldelser/kebab-huset-202603.jpg
     alt: Kebab i pita
 ---
 To til fem setninger i markdown.
@@ -132,7 +132,7 @@ Intro i markdown.
 
 Legg bilder i repoet og referer til dem fra front matter:
 
-- `assets/img/anmeldelser/<anmeldelse-filnavn>/1.jpg`, `2.jpg`, …
+- `assets/img/anmeldelser/<sted>-<YYYYMM>.jpg` – alle anmeldelsesbilder ligger flatt i samme mappe
 - `assets/img/steder/<sted-slug>/…`
 
 Bredde og høyde leses ut av filene ved bygg og settes på `<img>`, så siden ikke hopper mens bildene laster. Bildene serveres som de er, uten resizing. Skaler dem ned selv før du sjekker inn (rundt 1600 px bred og under 500 kB er et greit mål), både for lastetid og fordi de ligger i git.

@@ -8,8 +8,8 @@ visited: 2026-03                   # Besøkt, måned + år
 date: 2026-03-15                   # Publiseringsdato (styrer rekkefølgen i feeden)
 status: published                  # published | draft | archived
 tags: [kebab, hjemmelaget pita, halal, sen-natt]
-images:                            # Valgfri. Legg filene i assets/img/anmeldelser/<sted>-<rett>-<YYYY-MM>/
-  - src: /assets/img/anmeldelser/kebab-huset-kebab-stor-2026-03/1.jpg
+images:                            # Valgfri. Filene ligger flatt i assets/img/anmeldelser/, f.eks. <sted>-<YYYYMM>.jpg
+  - src: /assets/img/anmeldelser/kebab-huset-202603.jpg
     alt: Kebab i hjemmelaget pita med hvitløksdressing
     caption:                       # Valgfri bildetekst
 anchor:                            # Valgfri – overstyrer auto-ankeret (<rett-slug>-<YYYY-MM>)

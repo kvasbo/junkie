@@ -42,7 +42,7 @@ when "anmeldelse"
            .sub(/^title: .*$/, "title: #{b}")
            .sub(/^visited: .*$/, "visited: #{mnd}")
            .sub(/^date: .*$/, "date: #{Date.today}")
-           .sub(%r{/assets/img/anmeldelser/[^/]+/}, "/assets/img/anmeldelser/#{key}/")
+           .sub(%r{/assets/img/anmeldelser/\S+}, "/assets/img/anmeldelser/#{sted}-#{mnd.delete('-')}.jpg")
   write("#{ROOT}/_anmeldelser/#{key}.md", tpl)
 when "liste"
   abort "Bruk: bin/ny liste <slug>" if a.nil?
