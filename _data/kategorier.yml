@@ -23,3 +23,6 @@
 - slug: sandwich
   name: Sandwich
   description: Alt annet på listen kan defineres som en sandwich også om man er pedantisk.
+- slug: Burger
+  name: Burger
+  description: Kan også defineres som en sandwich.
