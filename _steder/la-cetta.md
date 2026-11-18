@@ -6,6 +6,7 @@ address: "Thereses gate 51, 0354 Oslo"
 lat: 59.925991
 lng: 10.730738
 google_maps_url: https://maps.app.goo.gl/d4FxdKGMamWp4WPx5
+google_place_id: ChIJJQuu83duQUYRFZjMbkZo1FY
 cover_image:
 score_override:
 status: open

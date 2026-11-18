@@ -8,6 +8,7 @@ address: Smalgangen 1, 0188 Oslo
 lat: 59.91249667541186             # Koordinater (høyreklikk i Google Maps for å kopiere)
 lng: 10.75899837108922
 google_maps_url: https://maps.app.goo.gl/ixccH5gSjnpfesci7              # Valgfri – lenke vises under adressen
+google_place_id: ChIJ_SLJE2BuQUYRkfdSXUIS-Ig
 cover_image:                       # Valgfri, f.eks. /assets/img/steder/kebab-huset/fasade.jpg (brukes som OG-bilde)
 score_override:                    # Tom = automatisk (høyeste rett-score). 0–3 for å overstyre.
 status: open                       # open | closed

@@ -8,6 +8,7 @@ address: Kirkeveien 85, 1344 Haslum
 lat: 59.91551623741285                 # Koordinater (høyreklikk i Google Maps for å kopiere)
 lng: 10.56153661534311
 google_maps_url: https://maps.app.goo.gl/9qPDXAbgjVDwiamN9              # Valgfri – lenke vises under adressen
+google_place_id: ChIJwWC09dATQUYR8fUO7I0YLTU
 cover_image:                       # Valgfri, f.eks. /assets/img/steder/kebab-huset/fasade.jpg (brukes som OG-bilde)
 score_override:                    # Tom = automatisk (høyeste rett-score). 0–3 for å overstyre.
 status: open                       # open | closed

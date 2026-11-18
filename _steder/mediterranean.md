@@ -8,6 +8,7 @@ address: Torggata 34, 0183 Oslo
 lat: 59.91733421170689                       # Koordinater (høyreklikk i Google Maps for å kopiere)
 lng: 10.753542042328444
 google_maps_url: https://maps.app.goo.gl/gRgi5rv9hoCrD4Co8               # Valgfri – lenke vises under adressen
+google_place_id: ChIJRVs_VGFuQUYRKoozxSqfCog
 cover_image:                       # Valgfri, f.eks. /assets/img/steder/kebab-huset/fasade.jpg (brukes som OG-bilde)
 score_override:                    # Tom = automatisk (høyeste rett-score). 0–3 for å overstyre.
 status: open                       # open | closed

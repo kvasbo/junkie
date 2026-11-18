@@ -6,6 +6,7 @@ address: "Brugata 1, 0186 Oslo"
 lat: 59.9145
 lng: 10.753778
 google_maps_url: https://maps.app.goo.gl/LPwezF8SMZ1qDpKK9
+google_place_id: ChIJE-3MH69vQUYRWLZ84iAZQJA
 cover_image:
 score_override:
 status: open
