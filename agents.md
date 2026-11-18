@@ -17,7 +17,7 @@ Valg tatt for den statiske utgaven:
 - [x] **Bilder:** Originaler i repoet under `assets/img/`, servert som de er. Ingen resizing; skaler ned før innsjekk. Erstatter imgproxy + R2.
 - [x] **Søk:** Klientside-søk mot en JSON-indeks generert ved bygg (`/sok.json`). Erstatter FTS5.
 - [x] **Kart:** Leaflet (selvhostet) med OSM-fliser, data fra `/steder.json`.
-- [x] **Stedsdata:** Manuell front matter (adresse, koordinater, åpningstider). Ingen Google Places-integrasjon.
+- [x] **Stedsdata:** Front matter i git. Adresse, koordinater og nedlagt-status synkes mot Google Places av `bin/google-sync` i GitHub Actions, som åpner en pull request med endringene.
 - [x] **Kategori-, tag- og bydelssider:** Genereres av en Jekyll-plugin (`_plugins/junkie.rb`) som også regner ut steds-score, anbefalt rett, ankerpunkter og feed.
 - [x] **Deploy:** Cloudflare Pages med git-integrasjon. `bundle exec jekyll build`, output `_site`, `JEKYLL_ENV=production`. Ingen Ruby-pin – byggemiljøets forhåndsinstallerte Ruby brukes.
 - [x] **Typografi:** Lilita One (OFL) selvhostet for overskrifter, system-sans for brødtekst.
