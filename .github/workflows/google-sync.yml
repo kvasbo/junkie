@@ -1,6 +1,5 @@
-# Synkroniserer _steder/ med Google Maps og åpner en pull request med endringene.
-# Krever repo-secret GOOGLE_MAPS_API_KEY og at Actions får lage pull requests
-# (Settings → Actions → General → Workflow permissions). Se README.md.
+# Synkroniserer _steder/ med Google Maps og committer endringene rett til main.
+# Krever repo-secret GOOGLE_MAPS_API_KEY. Se README.md.
 name: Google Maps-synk
 
 on:
@@ -12,13 +11,12 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Bare vis endringene, ikke lag pull request
+        description: Bare vis endringene, ikke commit
         type: boolean
         default: false
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: google-sync
@@ -30,6 +28,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: main
 
       - uses: ruby/setup-ruby@v1
         with:
@@ -40,11 +40,8 @@ jobs:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: bin/google-sync ${{ inputs.dry_run && '--dry-run' || '' }} --rapport "$RUNNER_TEMP/rapport.md"
 
-      - name: Åpne eller oppdater pull request
+      - name: Commit og push til main
         if: ${{ !inputs.dry_run }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GREN: google-sync
         run: |
           if [ -z "$(git status --porcelain -- _steder)" ]; then
             echo "Ingen endringer."
@@ -52,13 +49,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$GREN"
           git add _steder
           git commit -m "Synk steder med Google Maps"
-          git push --force origin "$GREN"
-          if [ -n "$(gh pr list --head "$GREN" --state open --json number --jq '.[].number')" ]; then
-            gh pr edit "$GREN" --body-file "$RUNNER_TEMP/rapport.md"
-          else
-            gh pr create --base main --head "$GREN" \
-              --title "Synk steder med Google Maps" --body-file "$RUNNER_TEMP/rapport.md"
-          fi
+          git pull --rebase origin main
+          git push origin HEAD:main
