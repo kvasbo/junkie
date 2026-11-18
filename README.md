@@ -56,6 +56,7 @@ address: Grønlandsleiret 1, 0190 Oslo
 lat: 59.9127                   # høyreklikk i Google Maps for å kopiere
 lng: 10.7617
 google_maps_url: https://maps.app.goo.gl/...
+google_place_id: ChIJ...       # fylles inn av Google Maps-synken
 cover_image: /assets/img/steder/kebab-huset/fasade.jpg   # valgfri, brukes som OG-bilde
 score_override:                # tom = auto (høyeste rett-score)
 status: open                   # open | closed
@@ -144,6 +145,30 @@ bin/sjekk
 ```
 
 Kjører et produksjonsbygg til en midlertidig mappe og lister problemer: bilder som er referert men ikke finnes, score utenfor 0–3, ugyldig `visited`, anmeldelser som peker på ukjente steder, to anmeldelser med samme anker, lister som peker på ukjente anmeldelser, kategorier som ikke finnes i `_data/kategorier.yml`, og tags skrevet med ulik stavemåte. Feil stopper produksjonsbygget (også hos Cloudflare); advarsler gjør det ikke. Lokalt med `jekyll serve` vises alt bare som advarsler.
+
+## Google Maps-synk
+
+`bin/google-sync` holder stedene i `_steder/` i takt med Google Maps via Places API (New). For hver lokasjon som ikke er nedlagt:
+
+- finner stedet hos Google (søk på navn + adresse, treffet må ligge innen 300 m fra koordinatene våre) og lagrer `google_place_id`
+- oppdaterer `address`, og `lat`/`lng` hvis Google plasserer stedet mer enn 30 m unna
+- fyller inn `google_maps_url` hvis den mangler
+- setter `status: closed` og `closed_at` når Google melder stedet permanent stengt
+
+Tittel, kategorier, bydel og tekst røres aldri. Midlertidig stengte steder og steder som ikke blir funnet, listes som advarsler. Sett `google_sync: false` i front matter for å holde et sted (eller én lokasjon) utenfor, eller legg inn `google_place_id` for hånd hvis søket bommer.
+
+Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen. Endringer havner på grenen `google-sync` og i en pull request mot `main`, så ingenting publiseres før du har sett over og merget. Oppsett, én gang:
+
+1. Lag en API-nøkkel i Google Cloud Console med «Places API (New)» aktivert, og begrens nøkkelen til det API-et.
+2. Legg den inn som repo-secret `GOOGLE_MAPS_API_KEY` (Settings → Secrets and variables → Actions).
+3. Kryss av «Allow GitHub Actions to create and approve pull requests» (Settings → Actions → General → Workflow permissions).
+
+Lokalt:
+
+```sh
+GOOGLE_MAPS_API_KEY=... bin/google-sync --dry-run          # vis hva som ville blitt endret
+GOOGLE_MAPS_API_KEY=... bin/google-sync sultan             # bare ett sted
+```
 
 ## Markdown for maskiner
 

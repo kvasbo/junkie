@@ -1,0 +1,307 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# Synkroniserer stedene i _steder/ med Google Maps (Places API).
+#
+#   GOOGLE_MAPS_API_KEY=... bin/google-sync             # alle steder
+#   GOOGLE_MAPS_API_KEY=... bin/google-sync sultan      # bare _steder/sultan.md
+#   GOOGLE_MAPS_API_KEY=... bin/google-sync --dry-run   # vis endringer uten å skrive
+#
+# For hver lokasjon som ikke er nedlagt:
+#   - finner stedet hos Google og lagrer `google_place_id` (første gang)
+#   - oppdaterer `address` og `lat`/`lng` (koordinater bare ved flytt over 30 m)
+#   - fyller inn `google_maps_url` hvis den mangler
+#   - setter `status: closed` + `closed_at` når Google sier permanent stengt
+#
+# Tittel, kategorier, bydel og tekst røres aldri. `google_sync: false` i front
+# matter hopper over stedet. Front matter redigeres linje for linje, så
+# rekkefølge og formatering ellers beholdes.
+#
+# Kjøres av .github/workflows/google-sync.yml, som lager en pull request med
+# endringene. Kun standardbibliotek, trenger ikke `bundle install`.
+#
+require "date"
+require "json"
+require "net/http"
+require "optparse"
+require "uri"
+require "yaml"
+
+Encoding.default_external = Encoding::UTF_8
+$stdout.set_encoding(Encoding::UTF_8)
+
+ROOT = File.expand_path("..", __dir__)
+API_URL = ENV.fetch("GOOGLE_PLACES_URL", "https://places.googleapis.com/v1")
+FELTER = %w[id displayName formattedAddress location businessStatus googleMapsUri].freeze
+MAKS_AVSTAND_TREFF = 300 # meter mellom våre koordinater og Googles for at et søketreff godtas
+MIN_FLYTT = 30           # meter før lat/lng oppdateres
+
+class ApiFeil < StandardError; end
+
+# Tynn klient mot Places API (New).
+class Places
+  attr_reader :kall
+
+  def initialize(key)
+    @key = key
+    @kall = 0
+  end
+
+  # Returnerer stedet, eller nil hvis ID-en ikke finnes lenger.
+  def detaljer(id)
+    uri = URI("#{API_URL}/places/#{URI.encode_www_form_component(id)}?languageCode=no&regionCode=NO")
+    req = Net::HTTP::Get.new(uri)
+    req["X-Goog-FieldMask"] = FELTER.join(",")
+    utfor(req, uri, ikke_funnet_ok: true)
+  end
+
+  def sok(tekst, lat, lng)
+    uri = URI("#{API_URL}/places:searchText")
+    req = Net::HTTP::Post.new(uri)
+    req["Content-Type"] = "application/json"
+    req["X-Goog-FieldMask"] = FELTER.map { |f| "places.#{f}" }.join(",")
+    body = { textQuery: tekst, languageCode: "no", regionCode: "NO", pageSize: 5 }
+    body[:locationBias] = { circle: { center: { latitude: lat, longitude: lng }, radius: 500.0 } } if lat && lng
+    req.body = JSON.generate(body)
+    (utfor(req, uri) || {})["places"] || []
+  end
+
+  private
+
+  def utfor(req, uri, ikke_funnet_ok: false)
+    req["X-Goog-Api-Key"] = @key
+    forsok = 0
+    begin
+      forsok += 1
+      @kall += 1
+      res = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 10, read_timeout: 20) { |h| h.request(req) }
+      raise Net::ReadTimeout, "HTTP #{res.code}" if res.code.to_i == 429 || res.code.to_i >= 500
+    rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, SystemCallError, OpenSSL::SSL::SSLError => e
+      raise ApiFeil, "Fikk ikke kontakt med Places API: #{e.message}" if forsok >= 3
+      sleep 2**forsok
+      retry
+    end
+    return JSON.parse(res.body) if res.code.to_i == 200
+    return nil if ikke_funnet_ok && [400, 404].include?(res.code.to_i) && res.body =~ /NOT_FOUND|not a valid Place ID|INVALID_ARGUMENT/i
+
+    melding = begin
+      JSON.parse(res.body).dig("error", "message")
+    rescue JSON::ParserError
+      nil
+    end
+    raise ApiFeil, "Places API svarte #{res.code}: #{melding || res.body.to_s[0, 300]}"
+  end
+end
+
+# Én fil i _steder/. Leser front matter som YAML, men skriver ved å endre enkeltlinjer.
+class Stedfil
+  attr_reader :path, :data
+
+  def initialize(path)
+    @path = path
+    @lines = File.read(path, encoding: "UTF-8").lines
+    slutt = @lines.first.to_s.strip == "---" && @lines[1..].index { |l| l.strip == "---" }
+    raise "mangler front matter" unless slutt
+    @slutt = slutt + 1
+    @data = YAML.safe_load(@lines[1...@slutt].join, permitted_classes: [Date, Time]) || {}
+    @endret = false
+  end
+
+  def rel = path.delete_prefix("#{ROOT}/")
+  def endret? = @endret
+
+  # [[indeks, hash]] – indeks er nil for steder uten `locations:`
+  def lokasjoner
+    locs = @data["locations"]
+    if locs.is_a?(Array) && locs.any?(Hash)
+      locs.each_with_index.select { |l, _| l.is_a?(Hash) }.map { |l, i| [i, l] }
+    else
+      [[nil, @data]]
+    end
+  end
+
+  # Setter `key: verdi` på stedet (i = nil) eller i lokasjon nr. i. Finnes ikke
+  # nøkkelen, settes den inn etter den første av `etter` som finnes, ellers sist.
+  def sett(i, key, verdi, etter: [])
+    fra, til, innrykk = i ? lokasjonsomraade(i) : [1, @slutt, ""]
+    finn = lambda do |k|
+      re = i ? /\A(\s*-\s+|\s+)#{Regexp.escape(k)}:(\s|\z)/ : /\A()#{Regexp.escape(k)}:(\s|\z)/
+      (fra...til).find { |n| @lines[n] =~ re }
+    end
+    if (n = finn.call(key))
+      prefiks = i ? @lines[n][/\A(\s*-\s+|\s+)/] : ""
+      @lines[n] = "#{prefiks}#{key}: #{verdi}\n"
+    else
+      anker = etter.lazy.filter_map { |k| finn.call(k) }.first
+      @lines.insert(anker ? anker + 1 : til, "#{innrykk}#{key}: #{verdi}\n")
+      @slutt += 1
+    end
+    @endret = true
+  end
+
+  def skriv = File.write(path, @lines.join)
+
+  private
+
+  # [første linje, linjen etter siste, innrykk for nøkler] for lokasjon nr. i
+  def lokasjonsomraade(i)
+    start = (1...@slutt).find { |n| @lines[n] =~ /\Alocations:\s*(#.*)?$/ } or raise "fant ikke locations:"
+    n = start + 1
+    elementer = []
+    dybde = nil
+    while n < @slutt && (@lines[n] =~ /\A\s+\S/ || @lines[n].strip.empty?)
+      if (m = @lines[n].match(/\A(\s*)- /))
+        dybde ||= m[1].size
+        elementer << n if m[1].size == dybde
+      end
+      n += 1
+    end
+    fra = elementer[i] or raise "fant ikke lokasjon #{i + 1}"
+    til = elementer[i + 1] || n
+    til -= 1 while til > fra + 1 && @lines[til - 1].strip.empty?
+    [fra, til, " " * (dybde + 2)]
+  end
+end
+
+def avstand(lat1, lng1, lat2, lng2)
+  rad = Math::PI / 180
+  a = Math.sin((lat2 - lat1) * rad / 2)**2 +
+      Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin((lng2 - lng1) * rad / 2)**2
+  (2 * 6_371_000 * Math.asin(Math.sqrt(a))).round
+end
+
+def tall(v)
+  Float(v)
+rescue ArgumentError, TypeError
+  nil
+end
+
+def yaml_tekst(s)
+  s =~ %r{\A[A-Za-z][\w.\-/:?=&%+~]*\z} && !s.end_with?(":") ? s : JSON.generate(s)
+end
+
+# Synker én lokasjon. Returnerer [endringer, advarsler] som tekstlinjer.
+def synk(fil, i, lok, places)
+  endringer = []
+  advarsler = []
+  tittel = fil.data["title"].to_s
+  lat = tall(lok["lat"])
+  lng = tall(lok["lng"])
+  kjent_id = lok["google_place_id"].to_s.strip
+
+  sted = nil
+  unless kjent_id.empty?
+    sted = places.detaljer(kjent_id)
+    advarsler << "google_place_id #{kjent_id} finnes ikke lenger hos Google, søker på nytt" unless sted
+  end
+
+  unless sted
+    sporring = [tittel, lok["address"]].map(&:to_s).reject(&:empty?).join(", ")
+    treff = places.sok(sporring, lat, lng)
+    sted = if lat && lng
+             treff.find { |t| t["location"] && avstand(lat, lng, t.dig("location", "latitude"), t.dig("location", "longitude")) <= MAKS_AVSTAND_TREFF }
+           else
+             treff.first
+           end
+    unless sted
+      naermest = treff.first
+      hint = naermest ? " Nærmeste treff: «#{naermest.dig('displayName', 'text')}», #{naermest['formattedAddress']}." : ""
+      advarsler << "fant ikke stedet hos Google (søkte «#{sporring}»).#{hint} Sett google_place_id for hånd, eller google_sync: false."
+      return [endringer, advarsler]
+    end
+  end
+
+  sett = lambda do |key, gammel, ny, verdi, etter|
+    fil.sett(i, key, verdi, etter: etter)
+    endringer << (gammel.to_s.empty? ? "#{key}: #{ny}" : "#{key}: #{gammel} → #{ny}")
+  end
+
+  id = sted["id"].to_s
+  sett.call("google_place_id", kjent_id, id, yaml_tekst(id), %w[google_maps_url lng lat address]) if !id.empty? && id != kjent_id
+
+  adresse = sted["formattedAddress"].to_s.sub(/,\s*(Norge|Norway)\z/, "").strip
+  if !adresse.empty? && adresse != lok["address"].to_s.strip
+    sett.call("address", lok["address"], adresse, JSON.generate(adresse), %w[bydel name title])
+  end
+
+  glat = tall(sted.dig("location", "latitude"))
+  glng = tall(sted.dig("location", "longitude"))
+  if glat && glng && (lat.nil? || lng.nil? || avstand(lat, lng, glat, glng) > MIN_FLYTT)
+    flytt = lat && lng ? " (#{avstand(lat, lng, glat, glng)} m)" : ""
+    fil.sett(i, "lat", glat.round(6), etter: %w[address])
+    fil.sett(i, "lng", glng.round(6), etter: %w[lat])
+    endringer << "lat/lng: #{[lat, lng].compact.join(', ')} → #{glat.round(6)}, #{glng.round(6)}#{flytt}".sub(": →", ":")
+  end
+
+  if lok["google_maps_url"].to_s.strip.empty? && !sted["googleMapsUri"].to_s.empty?
+    sett.call("google_maps_url", nil, sted["googleMapsUri"], yaml_tekst(sted["googleMapsUri"]), %w[lng lat address])
+  end
+
+  case sted["businessStatus"]
+  when "CLOSED_PERMANENTLY"
+    mnd = Date.today.strftime("%Y-%m")
+    sett.call("status", lok["status"] || "open", "closed (permanent stengt ifølge Google)", "closed", [])
+    fil.sett(i, "closed_at", mnd, etter: %w[status]) if lok["closed_at"].to_s.empty?
+  when "CLOSED_TEMPORARILY"
+    advarsler << "midlertidig stengt ifølge Google"
+  end
+
+  [endringer, advarsler]
+end
+
+# --- hovedprogram ---------------------------------------------------------
+dry_run = false
+rapportfil = nil
+OptionParser.new do |o|
+  o.banner = "Bruk: bin/google-sync [--dry-run] [--rapport FIL] [slug ...]"
+  o.on("--dry-run", "Vis endringer uten å skrive filer") { dry_run = true }
+  o.on("--rapport FIL", "Skriv oppsummering som markdown til FIL") { |f| rapportfil = f }
+end.parse!
+
+key = ENV["GOOGLE_MAPS_API_KEY"].to_s.strip
+abort "GOOGLE_MAPS_API_KEY er ikke satt. Se «Google Maps-synk» i README.md." if key.empty?
+
+stier = if ARGV.empty?
+          Dir[File.join(ROOT, "_steder", "*.md")].sort
+        else
+          ARGV.map { |s| File.join(ROOT, "_steder", "#{File.basename(s, '.md')}.md") }
+        end
+stier.each { |p| abort "Finnes ikke: #{p.delete_prefix("#{ROOT}/")}" unless File.exist?(p) }
+
+places = Places.new(key)
+endringer = []
+advarsler = []
+
+begin
+  stier.each do |sti|
+    fil = begin
+      Stedfil.new(sti)
+    rescue StandardError => e
+      advarsler << "`#{sti.delete_prefix("#{ROOT}/")}`: kunne ikke leses (#{e.message})"
+      next
+    end
+    next if fil.data["google_sync"] == false || fil.data["status"].to_s == "closed"
+
+    fil.lokasjoner.each do |i, lok|
+      next if lok["status"].to_s == "closed" || lok["google_sync"] == false
+      hvor = "`#{fil.rel}`#{lok['name'] && i ? " (#{lok['name']})" : ''}"
+      e, a = synk(fil, i, lok, places)
+      e.each { |t| endringer << "#{hvor}: #{t}" }
+      a.each { |t| advarsler << "#{hvor}: #{t}" }
+    end
+    fil.skriv if fil.endret? && !dry_run
+  end
+rescue ApiFeil => e
+  abort "FEIL: #{e.message}"
+end
+
+rapport = +""
+rapport << "Automatisk synk av `_steder/` mot Google Maps (Places API).\n\n"
+rapport << "### Endringer#{dry_run ? ' (dry run, ingenting skrevet)' : ''}\n\n"
+rapport << (endringer.empty? ? "Ingen.\n" : endringer.map { |l| "- #{l}\n" }.join)
+rapport << "\n### Advarsler\n\n" << advarsler.map { |l| "- #{l}\n" }.join unless advarsler.empty?
+
+puts rapport
+puts "\n#{stier.size} filer sjekket, #{places.kall} API-kall."
+File.write(rapportfil, rapport) if rapportfil
+File.write(ENV["GITHUB_STEP_SUMMARY"], "## Google Maps-synk\n\n#{rapport}", mode: "a") if ENV["GITHUB_STEP_SUMMARY"]
