@@ -10,6 +10,11 @@ on:
     branches: [main]
     paths: ["_steder/**"]
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Bare vis endringene, ikke lag pull request
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -33,9 +38,10 @@ jobs:
       - name: Synk mot Google Maps
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-        run: bin/google-sync --rapport "$RUNNER_TEMP/rapport.md"
+        run: bin/google-sync ${{ inputs.dry_run && '--dry-run' || '' }} --rapport "$RUNNER_TEMP/rapport.md"
 
       - name: Åpne eller oppdater pull request
+        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
           GREN: google-sync

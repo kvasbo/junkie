@@ -157,7 +157,7 @@ Kjører et produksjonsbygg til en midlertidig mappe og lister problemer: bilder 
 
 Tittel, kategorier, bydel og tekst røres aldri. Midlertidig stengte steder og steder som ikke blir funnet, listes som advarsler. Sett `google_sync: false` i front matter for å holde et sted (eller én lokasjon) utenfor, eller legg inn `google_place_id` for hånd hvis søket bommer.
 
-Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen. Endringer havner på grenen `google-sync` og i en pull request mot `main`, så ingenting publiseres før du har sett over og merget. Oppsett, én gang:
+Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen (kryss av «dry_run» for bare å se endringene i kjøringens oppsummering). Endringer havner på grenen `google-sync` og i en pull request mot `main`, så ingenting publiseres før du har sett over og merget. Oppsett, én gang:
 
 1. Lag en API-nøkkel i Google Cloud Console med «Places API (New)» aktivert, og begrens nøkkelen til det API-et.
 2. Legg den inn som repo-secret `GOOGLE_MAPS_API_KEY` (Settings → Secrets and variables → Actions).
