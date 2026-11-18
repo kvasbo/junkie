@@ -9,16 +9,16 @@
 #
 # For hver lokasjon som ikke er nedlagt:
 #   - finner stedet hos Google og lagrer `google_place_id` (første gang)
-#   - oppdaterer `address` og `lat`/`lng` (koordinater bare ved flytt over 30 m)
-#   - fyller inn `google_maps_url` hvis den mangler
+#   - oppdaterer `lat`/`lng` når Google plasserer stedet mer enn 30 m unna
+#   - fyller inn `address` og `google_maps_url` hvis de mangler
 #   - setter `status: closed` + `closed_at` når Google sier permanent stengt
 #
 # Tittel, kategorier, bydel og tekst røres aldri. `google_sync: false` i front
 # matter hopper over stedet. Front matter redigeres linje for linje, så
 # rekkefølge og formatering ellers beholdes.
 #
-# Kjøres av .github/workflows/google-sync.yml, som lager en pull request med
-# endringene. Kun standardbibliotek, trenger ikke `bundle install`.
+# Kjøres ukentlig av .github/workflows/google-sync.yml, som committer
+# endringene rett til main. Kun standardbibliotek, trenger ikke `bundle install`.
 #
 require "date"
 require "json"
@@ -220,7 +220,7 @@ def synk(fil, i, lok, places)
   sett.call("google_place_id", kjent_id, id, yaml_tekst(id), %w[google_maps_url lng lat address]) if !id.empty? && id != kjent_id
 
   adresse = sted["formattedAddress"].to_s.sub(/,\s*(Norge|Norway)\z/, "").strip
-  if !adresse.empty? && adresse != lok["address"].to_s.strip
+  if !adresse.empty? && lok["address"].to_s.strip.empty?
     sett.call("address", lok["address"], adresse, JSON.generate(adresse), %w[bydel name title])
   end
 

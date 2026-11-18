@@ -151,17 +151,16 @@ Kjører et produksjonsbygg til en midlertidig mappe og lister problemer: bilder 
 `bin/google-sync` holder stedene i `_steder/` i takt med Google Maps via Places API (New). For hver lokasjon som ikke er nedlagt:
 
 - finner stedet hos Google (søk på navn + adresse, treffet må ligge innen 300 m fra koordinatene våre) og lagrer `google_place_id`
-- oppdaterer `address`, og `lat`/`lng` hvis Google plasserer stedet mer enn 30 m unna
-- fyller inn `google_maps_url` hvis den mangler
+- oppdaterer `lat`/`lng` hvis Google plasserer stedet mer enn 30 m unna
+- fyller inn `address` og `google_maps_url` hvis de mangler (en adresse du har skrevet selv, overstyres aldri)
 - setter `status: closed` og `closed_at` når Google melder stedet permanent stengt
 
 Tittel, kategorier, bydel og tekst røres aldri. Midlertidig stengte steder og steder som ikke blir funnet, listes som advarsler. Sett `google_sync: false` i front matter for å holde et sted (eller én lokasjon) utenfor, eller legg inn `google_place_id` for hånd hvis søket bommer.
 
-Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen (kryss av «dry_run» for bare å se endringene i kjøringens oppsummering). Endringer havner på grenen `google-sync` og i en pull request mot `main`, så ingenting publiseres før du har sett over og merget. Oppsett, én gang:
+Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen (kryss av «dry_run» for bare å se endringene i kjøringens oppsummering). Endringer committes rett til `main` av `github-actions[bot]` og deployes som vanlig; oppsummeringen av hver kjøring viser hva som ble endret. Oppsett, én gang:
 
 1. Lag en API-nøkkel i Google Cloud Console med «Places API (New)» aktivert, og begrens nøkkelen til det API-et.
 2. Legg den inn som repo-secret `GOOGLE_MAPS_API_KEY` (Settings → Secrets and variables → Actions).
-3. Kryss av «Allow GitHub Actions to create and approve pull requests» (Settings → Actions → General → Workflow permissions).
 
 Lokalt:
 
