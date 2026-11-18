@@ -18,7 +18,7 @@
 # rekkefølge og formatering ellers beholdes.
 #
 # Kjøres ukentlig av .github/workflows/google-sync.yml, som committer
-# endringene rett til main. Kun standardbibliotek, trenger ikke `bundle install`.
+# endringene rett til main (pull request hvis over 20 % av stedene endres). Kun standardbibliotek, trenger ikke `bundle install`.
 #
 require "date"
 require "json"

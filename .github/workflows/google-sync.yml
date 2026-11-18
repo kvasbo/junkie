@@ -1,5 +1,7 @@
 # Synkroniserer _steder/ med Google Maps og committer endringene rett til main.
-# Krever repo-secret GOOGLE_MAPS_API_KEY. Se README.md.
+# Endres over 20 % av stedene i én kjøring, blir det en pull request i stedet.
+# Krever repo-secret GOOGLE_MAPS_API_KEY, og at Actions får lage pull requests
+# (Settings → Actions → General → Workflow permissions). Se README.md.
 name: Google Maps-synk
 
 on:
@@ -17,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: google-sync
@@ -40,10 +43,16 @@ jobs:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: bin/google-sync ${{ inputs.dry_run && '--dry-run' || '' }} --rapport "$RUNNER_TEMP/rapport.md"
 
-      - name: Commit og push til main
+      - name: Push til main, eller pull request ved store endringer
         if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GREN: google-sync
+          MAKS_PROSENT: 20 # endres flere av stedene enn dette, blir det pull request
         run: |
-          if [ -z "$(git status --porcelain -- _steder)" ]; then
+          ENDRET=$(git status --porcelain -- _steder | wc -l)
+          TOTALT=$(ls _steder/*.md | wc -l)
+          if [ "$ENDRET" -eq 0 ]; then
             echo "Ingen endringer."
             exit 0
           fi
@@ -51,5 +60,18 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add _steder
           git commit -m "Synk steder med Google Maps"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          if [ $((ENDRET * 100)) -le $((TOTALT * MAKS_PROSENT)) ]; then
+            echo "$ENDRET av $TOTALT steder endret: pusher til main."
+            git pull --rebase origin main
+            git push origin HEAD:main
+            exit 0
+          fi
+          echo "$ENDRET av $TOTALT steder endret (over $MAKS_PROSENT %): lager pull request."
+          echo "**$ENDRET av $TOTALT steder endret (over $MAKS_PROSENT %), så endringene ligger i en pull request.**" >> "$GITHUB_STEP_SUMMARY"
+          git push --force origin "HEAD:$GREN"
+          if [ -n "$(gh pr list --head "$GREN" --state open --json number --jq '.[].number')" ]; then
+            gh pr edit "$GREN" --body-file "$RUNNER_TEMP/rapport.md"
+          else
+            gh pr create --base main --head "$GREN" \
+              --title "Synk steder med Google Maps" --body-file "$RUNNER_TEMP/rapport.md"
+          fi

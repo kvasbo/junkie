@@ -157,10 +157,11 @@ Kjører et produksjonsbygg til en midlertidig mappe og lister problemer: bilder 
 
 Tittel, kategorier, bydel og tekst røres aldri. Midlertidig stengte steder og steder som ikke blir funnet, listes som advarsler. Sett `google_sync: false` i front matter for å holde et sted (eller én lokasjon) utenfor, eller legg inn `google_place_id` for hånd hvis søket bommer.
 
-Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen (kryss av «dry_run» for bare å se endringene i kjøringens oppsummering). Endringer committes rett til `main` av `github-actions[bot]` og deployes som vanlig; oppsummeringen av hver kjøring viser hva som ble endret. Oppsett, én gang:
+Workflowen `.github/workflows/google-sync.yml` kjører skriptet hver mandag morgen, ved push til `main` som endrer `_steder/`, og manuelt fra Actions-fanen (kryss av «dry_run» for bare å se endringene i kjøringens oppsummering). Endringer committes rett til `main` av `github-actions[bot]` og deployes som vanlig; oppsummeringen av hver kjøring viser hva som ble endret. Endres mer enn 20 % av stedene i én kjøring, havner endringene i stedet på grenen `google-sync` med en pull request mot `main`, så du får sett over før noe publiseres. Oppsett, én gang:
 
 1. Lag en API-nøkkel i Google Cloud Console med «Places API (New)» aktivert, og begrens nøkkelen til det API-et.
 2. Legg den inn som repo-secret `GOOGLE_MAPS_API_KEY` (Settings → Secrets and variables → Actions).
+3. Kryss av «Allow GitHub Actions to create and approve pull requests» (Settings → Actions → General → Workflow permissions). Trengs bare for pull request-tilfellet.
 
 Lokalt:
 
