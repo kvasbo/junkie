@@ -10,8 +10,8 @@
 # Tomt svar = standardverdi i [klammer]. Ctrl-C avbryter uten å skrive noe.
 #
 # Med GOOGLE_MAPS_API_KEY satt (i miljøet eller i .env) spør veiviseren først
-# om Google place ID og henter navn, adresse, koordinater, Maps-lenke og bydel
-# derfra.
+# om en delt Google Maps-lenke (eller place ID) og henter navn, adresse,
+# koordinater, Maps-lenke og bydel derfra.
 #
 require "date"
 require "fileutils"
@@ -78,19 +78,57 @@ def parse_coords(str)
   [m[1].tr(",", "."), m[2].tr(",", ".")].map { |x| x.to_f.round(6) }
 end
 
+# Kaller Places API (New). Returnerer JSON-svaret, eller nil (med melding) ved feil.
+def google_api(req)
+  uri = req.uri
+  req["X-Goog-Api-Key"] = GOOGLE_KEY
+  res = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 10, read_timeout: 20) { |h| h.request(req) }
+  data = JSON.parse(res.body)
+  return data if res.code.to_i == 200
+  puts "  Google svarte #{res.code}: #{data.dig('error', 'message') || res.body[0, 200]}"
+  nil
+end
+
+# Finner place ID fra en Maps-lenke (delt maps.app.goo.gl-lenke eller
+# google.com/maps/place/...). Lenken har navn, koordinater og stedets cid;
+# vi søker på navnet nær koordinatene og velger treffet med samme cid.
+def place_id_fra_lenke(url)
+  5.times do
+    break unless URI(url).host.to_s.end_with?("goo.gl")
+    sted = Net::HTTP.get_response(URI(url))["location"] or break
+    url = sted
+  end
+  return Regexp.last_match(1) if url =~ /[?&]query_place_id=([\w-]+)/
+
+  navn = url[%r{/maps/place/([^/@?]+)}, 1]
+  cid = url[/!1s0x\h+:0x(\h+)/, 1]&.to_i(16)
+  lat, lng = (url.match(/!3d(-?[\d.]+)!4d(-?[\d.]+)/) || url.match(/@(-?[\d.]+),(-?[\d.]+)/))&.captures
+  unless navn && cid
+    puts "  Fant ikke stedet i lenken. Lim inn place ID i stedet."
+    return nil
+  end
+  navn = URI.decode_www_form_component(navn)
+
+  req = Net::HTTP::Post.new(URI("#{GOOGLE_URL}/places:searchText"))
+  req["Content-Type"] = "application/json"
+  req["X-Goog-FieldMask"] = "places.id,places.googleMapsUri"
+  body = { textQuery: navn, languageCode: "no", regionCode: "NO", pageSize: 10 }
+  body[:locationBias] = { circle: { center: { latitude: lat.to_f, longitude: lng.to_f }, radius: 500.0 } } if lat
+  req.body = JSON.generate(body)
+  treff = ((google_api(req) || {})["places"] || []).find { |p| p["googleMapsUri"].to_s[/[?&]cid=(\d+)/, 1].to_i == cid }
+  puts "  Fant ikke «#{navn}» i Googles søk. Lim inn place ID i stedet." unless treff
+  treff&.[]("id")
+rescue StandardError => e
+  puts "  Kunne ikke lese lenken: #{e.message}"
+  nil
+end
+
 # Henter et sted fra Places API (New). Returnerer en hash med ferdige
 # front matter-verdier, eller nil (med melding) hvis noe går galt.
 def hent_google(place_id)
-  uri = URI("#{GOOGLE_URL}/places/#{URI.encode_www_form_component(place_id)}?languageCode=no&regionCode=NO")
-  req = Net::HTTP::Get.new(uri)
-  req["X-Goog-Api-Key"] = GOOGLE_KEY
+  req = Net::HTTP::Get.new(URI("#{GOOGLE_URL}/places/#{URI.encode_www_form_component(place_id)}?languageCode=no&regionCode=NO"))
   req["X-Goog-FieldMask"] = "id,displayName,formattedAddress,location,googleMapsUri,businessStatus,addressComponents"
-  res = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 10, read_timeout: 20) { |h| h.request(req) }
-  data = JSON.parse(res.body)
-  unless res.code.to_i == 200
-    puts "  Google svarte #{res.code}: #{data.dig('error', 'message') || res.body[0, 200]}"
-    return nil
-  end
+  data = google_api(req) or return nil
   komponenter = (data["addressComponents"] || []).flat_map { |c| [c["longText"], c["shortText"]] }.compact
   bydel = BYDELER.find { |b| komponenter.any? { |k| k.casecmp?(b["name"].to_s) } }
   {
@@ -108,13 +146,16 @@ rescue StandardError => e
   nil
 end
 
-# Spør om place ID til stedet er hentet eller brukeren hopper over (tomt svar).
+# Spør om delt Maps-lenke eller place ID til stedet er hentet, eller brukeren
+# hopper over (tomt svar).
 def ask_google(default = nil)
   return nil if GOOGLE_KEY.empty?
   loop do
-    id = ask("Google place ID (tomt = fyll inn for hånd)", default).delete_prefix("place_id:").strip
-    return nil if id.empty?
-    g = hent_google(id)
+    svar = ask("Delt Google Maps-lenke eller place ID (tomt = fyll inn for hånd)", default)
+    return nil if svar.empty?
+    lenke = svar[%r{https?://\S+}]
+    id = lenke ? place_id_fra_lenke(lenke) : svar.delete_prefix("place_id:").strip
+    g = id && hent_google(id)
     if g
       puts "  Fant: #{g['name']}, #{g['address']}#{g['closed'] ? ' (PERMANENT STENGT ifølge Google)' : ''}"
       return g

@@ -37,7 +37,7 @@ Enklest er den interaktive veiviseren, som spør om det viktigste og skriver ren
 bin/sted          # nytt sted (også kjeder med flere lokasjoner) + valgfri første anmeldelse
 ```
 
-Med `GOOGLE_MAPS_API_KEY` satt (samme nøkkel som [Google Maps-synken](#google-maps-synk), i miljøet eller i `.env` i rotmappa) spør veiviseren først om Google place ID og henter navn, adresse, koordinater, Maps-lenke og bydel (hvis den finnes i `_data/bydeler.yml`) derfra, så du bare bekrefter med Enter. Place ID finner du med Googles [Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id#find-id). Uten nøkkel, eller med tomt svar, fyller du inn for hånd: koordinater kan limes inn som «59.912, 10.765» eller som en Google Maps-URL. Alternativt lager `bin/ny` filer fra malene i `_templates/`, med alle felter dokumentert i kommentarer:
+Med `GOOGLE_MAPS_API_KEY` satt (samme nøkkel som [Google Maps-synken](#google-maps-synk), i miljøet eller i `.env` i rotmappa) spør veiviseren først om en delt Google Maps-lenke (Del → Kopier lenke i Maps, f.eks. `https://maps.app.goo.gl/…`) og henter navn, adresse, koordinater, Maps-lenke, place ID og bydel (hvis den finnes i `_data/bydeler.yml`) derfra, så du bare bekrefter med Enter. Place ID (`ChIJ…`, fra Googles [Place ID Finder](https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder)) virker også. Uten nøkkel, eller med tomt svar, fyller du inn for hånd: koordinater kan limes inn som «59.912, 10.765» eller som en Google Maps-URL. Alternativt lager `bin/ny` filer fra malene i `_templates/`, med alle felter dokumentert i kommentarer:
 
 ```sh
 bin/ny sted "Kebab Huset"                    # _steder/kebab-huset.md
