@@ -1,5 +1,5 @@
 ---
-title: Bánh mì XO
+title: Bánh Mì Xo
 categories: [annet]
 locations:
   - name: Klingenberg

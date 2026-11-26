@@ -1,5 +1,5 @@
 ---
-title: Mad Love
+title: Mad Love Pizza
 categories: [pizza]
 bydel: gronland
 address: "Grønlandsleiret 61b, 0190 Oslo"
