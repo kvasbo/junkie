@@ -9,8 +9,15 @@
 # og kan lage _anmeldelser/<slug>-<rett>-<YYYY-MM>.md i samme slengen.
 # Tomt svar = standardverdi i [klammer]. Ctrl-C avbryter uten å skrive noe.
 #
+# Med GOOGLE_MAPS_API_KEY satt (i miljøet eller i .env) spør veiviseren først
+# om Google place ID og henter navn, adresse, koordinater, Maps-lenke og bydel
+# derfra.
+#
 require "date"
 require "fileutils"
+require "json"
+require "net/http"
+require "uri"
 require "yaml"
 
 Encoding.default_external = Encoding::UTF_8
@@ -18,8 +25,17 @@ $stdin.set_encoding(Encoding::UTF_8)
 $stdout.set_encoding(Encoding::UTF_8)
 
 ROOT = File.expand_path("..", __dir__)
+
+# KEY=verdi fra .env i rotmappa. Variabler som allerede er satt, vinner.
+env_fil = File.join(ROOT, ".env")
+File.foreach(env_fil) do |l|
+  next unless (m = l.match(/\A\s*(?:export\s+)?([A-Za-z_]\w*)\s*=\s*(.*?)\s*\z/))
+  ENV[m[1]] ||= m[2].sub(/\A(["'])(.*)\1\z/, '\2')
+end if File.exist?(env_fil)
 KATEGORIER = YAML.load_file(File.join(ROOT, "_data/kategorier.yml")) || []
 BYDELER    = YAML.load_file(File.join(ROOT, "_data/bydeler.yml")) || []
+GOOGLE_KEY = ENV["GOOGLE_MAPS_API_KEY"].to_s.strip
+GOOGLE_URL = ENV.fetch("GOOGLE_PLACES_URL", "https://places.googleapis.com/v1")
 
 def slugify(s)
   s.to_s.downcase.tr("æøå", "aoa").gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
@@ -62,6 +78,51 @@ def parse_coords(str)
   [m[1].tr(",", "."), m[2].tr(",", ".")].map { |x| x.to_f.round(6) }
 end
 
+# Henter et sted fra Places API (New). Returnerer en hash med ferdige
+# front matter-verdier, eller nil (med melding) hvis noe går galt.
+def hent_google(place_id)
+  uri = URI("#{GOOGLE_URL}/places/#{URI.encode_www_form_component(place_id)}?languageCode=no&regionCode=NO")
+  req = Net::HTTP::Get.new(uri)
+  req["X-Goog-Api-Key"] = GOOGLE_KEY
+  req["X-Goog-FieldMask"] = "id,displayName,formattedAddress,location,googleMapsUri,businessStatus,addressComponents"
+  res = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 10, read_timeout: 20) { |h| h.request(req) }
+  data = JSON.parse(res.body)
+  unless res.code.to_i == 200
+    puts "  Google svarte #{res.code}: #{data.dig('error', 'message') || res.body[0, 200]}"
+    return nil
+  end
+  komponenter = (data["addressComponents"] || []).flat_map { |c| [c["longText"], c["shortText"]] }.compact
+  bydel = BYDELER.find { |b| komponenter.any? { |k| k.casecmp?(b["name"].to_s) } }
+  {
+    "google_place_id" => data["id"],
+    "name" => data.dig("displayName", "text"),
+    "address" => data["formattedAddress"].to_s.sub(/,\s*(Norge|Norway)\z/, "").strip,
+    "lat" => data.dig("location", "latitude")&.round(6),
+    "lng" => data.dig("location", "longitude")&.round(6),
+    "google_maps_url" => data["googleMapsUri"]&.sub(/&g_mp=[^&]*/, ""),
+    "bydel" => bydel&.[]("slug"),
+    "closed" => data["businessStatus"] == "CLOSED_PERMANENTLY"
+  }
+rescue StandardError => e
+  puts "  Fikk ikke hentet fra Google: #{e.message}"
+  nil
+end
+
+# Spør om place ID til stedet er hentet eller brukeren hopper over (tomt svar).
+def ask_google(default = nil)
+  return nil if GOOGLE_KEY.empty?
+  loop do
+    id = ask("Google place ID (tomt = fyll inn for hånd)", default).delete_prefix("place_id:").strip
+    return nil if id.empty?
+    g = hent_google(id)
+    if g
+      puts "  Fant: #{g['name']}, #{g['address']}#{g['closed'] ? ' (PERMANENT STENGT ifølge Google)' : ''}"
+      return g
+    end
+    default = nil
+  end
+end
+
 def pick_kategorier
   puts "Kategorier: " + KATEGORIER.map { |k| "#{k['slug']} (#{k['name']})" }.join(", ")
   loop do
@@ -91,9 +152,18 @@ def pick_bydel(default = nil)
   end
 end
 
-def ask_lokasjon(navn_paakrevd)
+def ask_lokasjon(navn_paakrevd, g = nil)
   l = {}
   l["name"] = ask("Lokasjonens navn (f.eks. Kirkeristen)", nil, required: true) if navn_paakrevd
+  if g
+    l["address"] = ask("Adresse", g["address"], required: true)
+    l["lat"], l["lng"] = g["lat"], g["lng"] if g["lat"]
+    l["google_maps_url"] = g["google_maps_url"]
+    l["google_place_id"] = g["google_place_id"]
+    l["bydel"] = pick_bydel(g["bydel"])
+    l["status"] = "closed" if navn_paakrevd && ja?("Er denne lokasjonen nedlagt?", default: g["closed"])
+    return l
+  end
   l["address"] = ask("Adresse", nil, required: true)
   loop do
     c = parse_coords(ask("Koordinater (lim inn «lat, lng» eller Google Maps-URL)", ""))
@@ -121,7 +191,9 @@ def yaml_scalar(v)
 end
 
 puts "== Nytt sted =="
-title = ask("Navn på stedet", nil, required: true)
+puts "(Sett GOOGLE_MAPS_API_KEY for å hente stedsdata fra Google med place ID.)" if GOOGLE_KEY.empty?
+google = ask_google
+title = ask("Navn på stedet", google&.[]("name"), required: true)
 slug  = ask("Slug (filnavn og URL)", slugify(title))
 sted_path = File.join(ROOT, "_steder", "#{slug}.md")
 abort "Finnes allerede: _steder/#{slug}.md" if File.exist?(sted_path)
@@ -133,14 +205,15 @@ lokasjoner = []
 if flere
   loop do
     puts "-- Lokasjon #{lokasjoner.size + 1} --"
-    lokasjoner << ask_lokasjon(true)
+    g = ask_google(lokasjoner.empty? ? google&.[]("google_place_id") : nil)
+    lokasjoner << ask_lokasjon(true, g)
     break unless ja?("Legg til enda en lokasjon?", default: true)
   end
 else
-  lokasjoner << ask_lokasjon(false)
+  lokasjoner << ask_lokasjon(false, google)
 end
 
-nedlagt = !flere && ja?("Er stedet nedlagt?", default: false)
+nedlagt = !flere && ja?("Er stedet nedlagt?", default: google&.[]("closed") || false)
 closed_at = nedlagt ? ask("Når la det ned? (YYYY-MM)", Date.today.strftime("%Y-%m")) : nil
 kommentar = ask_multiline("Redaksjonell kommentar om stedet (markdown)")
 
@@ -154,6 +227,7 @@ if flere
     fm << "    address: #{yaml_scalar(l['address'])}\n"
     fm << "    lat: #{l['lat']}\n    lng: #{l['lng']}\n" if l["lat"]
     fm << "    google_maps_url: #{l['google_maps_url']}\n" if l["google_maps_url"]
+    fm << "    google_place_id: #{l['google_place_id']}\n" if l["google_place_id"]
     fm << "    bydel: #{l['bydel']}\n" if l["bydel"]
     fm << "    status: closed\n" if l["status"] == "closed"
   end
@@ -163,6 +237,7 @@ else
   fm << "address: #{yaml_scalar(l['address'])}\n"
   fm << "lat: #{l['lat']}\nlng: #{l['lng']}\n" if l["lat"]
   fm << "google_maps_url: #{l['google_maps_url']}\n" if l["google_maps_url"]
+  fm << "google_place_id: #{l['google_place_id']}\n" if l["google_place_id"]
 end
 fm << "cover_image:\n"
 fm << "score_override:\n"

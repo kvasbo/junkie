@@ -31,6 +31,13 @@ Encoding.default_external = Encoding::UTF_8
 $stdout.set_encoding(Encoding::UTF_8)
 
 ROOT = File.expand_path("..", __dir__)
+
+# KEY=verdi fra .env i rotmappa. Variabler som allerede er satt, vinner.
+env_fil = File.join(ROOT, ".env")
+File.foreach(env_fil) do |l|
+  next unless (m = l.match(/\A\s*(?:export\s+)?([A-Za-z_]\w*)\s*=\s*(.*?)\s*\z/))
+  ENV[m[1]] ||= m[2].sub(/\A(["'])(.*)\1\z/, '\2')
+end if File.exist?(env_fil)
 API_URL = ENV.fetch("GOOGLE_PLACES_URL", "https://places.googleapis.com/v1")
 FELTER = %w[id displayName formattedAddress location businessStatus googleMapsUri].freeze
 MAKS_AVSTAND_TREFF = 300 # meter mellom våre koordinater og Googles for at et søketreff godtas
@@ -233,8 +240,9 @@ def synk(fil, i, lok, places)
     endringer << "lat/lng: #{[lat, lng].compact.join(', ')} → #{glat.round(6)}, #{glng.round(6)}#{flytt}".sub(": →", ":")
   end
 
-  if lok["google_maps_url"].to_s.strip.empty? && !sted["googleMapsUri"].to_s.empty?
-    sett.call("google_maps_url", nil, sted["googleMapsUri"], yaml_tekst(sted["googleMapsUri"]), %w[lng lat address])
+  maps_url = sted["googleMapsUri"].to_s.sub(/&g_mp=[^&]*/, "")
+  if lok["google_maps_url"].to_s.strip.empty? && !maps_url.empty?
+    sett.call("google_maps_url", nil, maps_url, yaml_tekst(maps_url), %w[lng lat address])
   end
 
   case sted["businessStatus"]
