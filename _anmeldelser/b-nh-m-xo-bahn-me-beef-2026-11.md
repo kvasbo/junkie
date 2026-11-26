@@ -1,7 +1,7 @@
 ---
 venue: b-nh-m-xo
 title: Bahn Me Beef
-score: 0
+score: 1
 visited: 2026-11
 date: 2026-11-26
 status: published
