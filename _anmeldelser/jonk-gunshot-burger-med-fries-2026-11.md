@@ -5,7 +5,7 @@ score: 2
 visited: 2026-11
 date: 2026-11-26
 status: published
-tags: [Burger]
+tags: [burger]
 images:
   - src: /assets/img/anmeldelser/joenk-202611.jpg
     alt: Gunshot burger med fries

@@ -1,6 +1,6 @@
 ---
 title: Jønk
-categories: [Burger]
+categories: [burger]
 locations:
   - name: Grønland
     address: "Smalgangen 43, 0188 Oslo"
